@@ -707,6 +707,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
             height: 120,
             child: PageView.builder(
               controller: _instructorController,
+              physics: isWeb ? AlwaysScrollableScrollPhysics() : BouncingScrollPhysics(),
               onPageChanged: (index) {
                 setState(() {
                   _currentInstructorIndex = index;
@@ -747,15 +748,24 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               isWeb ? (instructors.length / 2).ceil() : instructors.length,
-              (index) => Container(
-                margin: EdgeInsets.symmetric(horizontal: 4),
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentInstructorIndex == index
-                      ? Colors.blue[600]
-                      : Colors.grey[300],
+              (index) => GestureDetector(
+                onTap: () {
+                  _instructorController.animateToPage(
+                    index,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentInstructorIndex == index ? 20 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: _currentInstructorIndex == index
+                        ? Colors.blue[600]
+                        : Colors.grey[300],
+                  ),
                 ),
               ),
             ),
@@ -1420,6 +1430,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
             height: 160,
             child: PageView.builder(
               controller: _testimonialController,
+              physics: isWeb ? AlwaysScrollableScrollPhysics() : BouncingScrollPhysics(),
               onPageChanged: (index) {
                 setState(() {
                   _currentTestimonialIndex = index;
@@ -1463,15 +1474,24 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               isWeb ? (testimonials.length / 2).ceil() : testimonials.length,
-              (index) => Container(
-                margin: EdgeInsets.symmetric(horizontal: 4),
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentTestimonialIndex == index
-                      ? Colors.blue[600]
-                      : Colors.grey[300],
+              (index) => GestureDetector(
+                onTap: () {
+                  _testimonialController.animateToPage(
+                    index,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentTestimonialIndex == index ? 20 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: _currentTestimonialIndex == index
+                        ? Colors.blue[600]
+                        : Colors.grey[300],
+                  ),
                 ),
               ),
             ),
