@@ -104,22 +104,25 @@ class _InterestBasedPageState extends State<InterestBasedPage>
     );
   }
 
-  // Mobile layout - exactly the same as original
+  // Mobile layout - fixed for overflow prevention
   Widget _buildMobileLayout() {
-    return Column(
-      children: [
-        // Top decorative image with animation
-        FadeTransition(
-          opacity: _fadeAnimation,
-          child: Image.asset(
-            'assets/images/shape8.png',
-            width: double.infinity,
-            fit: BoxFit.cover,
+    return SafeArea(
+      child: Column(
+        children: [
+          // Top decorative image with animation
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.12,
+              child: Image.asset(
+                'assets/images/shape8.png',
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ),
 
-        Expanded(
-          child: SafeArea(
+          Expanded(
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SlideTransition(
@@ -282,18 +285,21 @@ class _InterestBasedPageState extends State<InterestBasedPage>
               ),
             ),
           ),
-        ),
 
-        // Footer image with animation
-        FadeTransition(
-          opacity: _fadeAnimation,
-          child: Image.asset(
-            'assets/images/shape9.png',
-            width: double.infinity,
-            fit: BoxFit.cover,
+          // Footer image with animation
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.08,
+              child: Image.asset(
+                'assets/images/shape9.png',
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

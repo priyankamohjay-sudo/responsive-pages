@@ -52,8 +52,7 @@ class _AppLayoutState extends State<AppLayout> {
         break;
       case 1:
         // Navigate to All Courses
-        Navigator.pushReplacementNamed(context, '/dashboard');
-        // You can add specific navigation logic here
+        Navigator.pushNamed(context, '/all-courses');
         break;
       case 2:
         // Navigate to Courses

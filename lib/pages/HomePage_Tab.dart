@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'OfferPage.dart';
 import 'CategoriesPage.dart';
 import 'SubcategoryPage.dart';
+import 'AllCoursesPage_Tab.dart';
 import '../services/categories_service.dart';
 
 class HomePageTab extends StatefulWidget {
@@ -30,6 +31,10 @@ class _HomePageTabState extends State<HomePageTab>
   late PageController _categoriesPageController;
   int _currentCategoryIndex = 0;
 
+  // Page controller for progress cards
+  late PageController _progressPageController;
+  int _currentProgressIndex = 0;
+
   // Categories data
   final CategoriesService _categoriesService = CategoriesService();
   List<CategoryModel> _categories = [];
@@ -54,6 +59,7 @@ class _HomePageTabState extends State<HomePageTab>
     // Initialize page controllers
     _offersPageController = PageController();
     _categoriesPageController = PageController();
+    _progressPageController = PageController();
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
@@ -81,6 +87,7 @@ class _HomePageTabState extends State<HomePageTab>
     _scaleController.dispose();
     _offersPageController.dispose();
     _categoriesPageController.dispose();
+    _progressPageController.dispose();
     super.dispose();
   }
 
@@ -89,7 +96,7 @@ class _HomePageTabState extends State<HomePageTab>
       final categories = await _categoriesService.getCategories();
       if (mounted) {
         setState(() {
-          _categories = categories; // Show all categories in scrollable view
+          _categories = categories; // Show all categories in scrollable v
           _categoriesLoading = false;
         });
       }
@@ -194,12 +201,12 @@ class _HomePageTabState extends State<HomePageTab>
               ),
               const SizedBox(height: 12),
 
-              // Enhanced Featured Course Card
+              // Enhanced Featured Course Cards (2 courses)
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: _buildFeaturedCourseCard(),
+                  child: _buildFeaturedCoursesSection(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -209,7 +216,7 @@ class _HomePageTabState extends State<HomePageTab>
                 opacity: _fadeAnimation,
                 child: _buildSectionHeader(
                   'Popular Courses',
-                  'View All',
+                  'View All', 
                   Icons.trending_up_rounded,
                 ),
               ),
@@ -256,7 +263,7 @@ class _HomePageTabState extends State<HomePageTab>
                 opacity: _fadeAnimation,
                 child: SlideTransition(
                   position: _slideAnimation,
-                  child: _buildLearningProgressSection(),
+                  child: _buildProgressSection(),
                 ),
               ),
               const SizedBox(height: 24),
@@ -325,7 +332,7 @@ class _HomePageTabState extends State<HomePageTab>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Continue your ${widget.selectedLanguage} journey',
+                  'Continue your Flutter journey',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 14,
@@ -391,8 +398,8 @@ class _HomePageTabState extends State<HomePageTab>
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(8), // Reduced padding
+    return Container( 
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
@@ -411,18 +418,18 @@ class _HomePageTabState extends State<HomePageTab>
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(3), // Reduced padding
+
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(icon, color: color, size: 16), // Smaller icon
+            child: Icon(icon, color: color, size: 16), 
           ),
-          const SizedBox(height: 3), // Reduced spacing
+          const SizedBox(height: 3), 
           Text(
             value,
             style: TextStyle(
-              fontSize: 12, // Smaller font
+              fontSize: 12, 
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -430,7 +437,7 @@ class _HomePageTabState extends State<HomePageTab>
           Text(
             label,
             style: TextStyle(
-              fontSize: 12, // Smaller font
+              fontSize: 12, 
               color: Colors.grey[600],
               height: 1.6,
               fontWeight: FontWeight.w500,
@@ -444,10 +451,87 @@ class _HomePageTabState extends State<HomePageTab>
     );
   }
 
+  // Featured Courses Section (2 courses)
+  Widget _buildFeaturedCoursesSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+    
+    final featuredCourses = [
+      {
+        'title': 'Flutter Development Fundamentals',
+        'price': '\$100.00',
+        'rating': '4.8',
+        'image': 'assets/images/developer.png',
+        'gradient': [Color(0xFF5F299E), Color(0xFFFFD700)],
+      },
+      {
+        'title': 'UI/UX Design Masterclass',
+        'price': '\$85.00',
+        'rating': '4.9',
+        'image': 'assets/images/test.png',
+        'gradient': [Color(0xFFEC4899), Color(0xFF06B6D4)],
+      },
+    ];
+
+    if (isMobile) {
+      // Mobile: Show courses vertically (unchanged)
+      return Column(
+        children: featuredCourses.map((course) => 
+          Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: _buildFeaturedCourseCard(
+              title: course['title'] as String,
+              price: course['price'] as String,
+              rating: course['rating'] as String,
+              image: course['image'] as String,
+              gradient: course['gradient'] as List<Color>,
+            ),
+          ),
+        ).toList(),
+      );
+    } else {
+      // Web: Show 2 courses side by side
+      return Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: _buildFeaturedCourseCard(
+                title: featuredCourses[0]['title'] as String,
+                price: featuredCourses[0]['price'] as String,
+                rating: featuredCourses[0]['rating'] as String,
+                image: featuredCourses[0]['image'] as String,
+                gradient: featuredCourses[0]['gradient'] as List<Color>,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: _buildFeaturedCourseCard(
+                title: featuredCourses[1]['title'] as String,
+                price: featuredCourses[1]['price'] as String,
+                rating: featuredCourses[1]['rating'] as String,
+                image: featuredCourses[1]['image'] as String,
+                gradient: featuredCourses[1]['gradient'] as List<Color>,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   // Featured Course Card
-  Widget _buildFeaturedCourseCard() {
+  Widget _buildFeaturedCourseCard({
+    required String title,
+    required String price,
+    required String rating,
+    required String image,
+    required List<Color> gradient,
+  }) {
     return Container(
-      height: 180, // More compact height
+      height: 180, 
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -467,7 +551,7 @@ class _HomePageTabState extends State<HomePageTab>
             Container(
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/developer.png'),
+                  image: AssetImage(image),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -502,12 +586,12 @@ class _HomePageTabState extends State<HomePageTab>
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Color(0xFF5F299E), Color(0xFFFFD700)],
+                            colors: gradient,
                           ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '\$100.00',
+                          price,
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -535,7 +619,7 @@ class _HomePageTabState extends State<HomePageTab>
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '4.8',
+                              rating,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -548,7 +632,7 @@ class _HomePageTabState extends State<HomePageTab>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '${widget.selectedLanguage} for Beginners Journey',
+                    title,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -623,7 +707,7 @@ class _HomePageTabState extends State<HomePageTab>
         ),
         GestureDetector(
           onTap: () {
-            // Navigate to OfferPage if this is the Special Offers section
+            // Navigate to appropriate pages based on section
             if (title == 'Special Offers') {
               Navigator.push(
                 context,
@@ -634,8 +718,12 @@ class _HomePageTabState extends State<HomePageTab>
                 context,
                 MaterialPageRoute(builder: (context) => CategoriesPage()),
               );
+            } else if (title == 'Popular Courses' || title == 'Recommended for You' || title == 'Featured Course') {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AllCoursesPageTab(selectedLanguage: 'Flutter')),
+              );
             }
-            // Add haptic feedback and navigation for other sections
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -693,9 +781,13 @@ class _HomePageTabState extends State<HomePageTab>
       );
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+    final categoriesPerPage = isMobile ? 2 : 3; // Mobile: 2, Web: 3 categories per slide
+
     return Column(
       children: [
-        // Categories PageView - Similar to Special Offers
+        // Categories PageView - Responsive
         SizedBox(
           height: 160,
           child: PageView.builder(
@@ -705,11 +797,10 @@ class _HomePageTabState extends State<HomePageTab>
                 _currentCategoryIndex = index;
               });
             },
-            itemCount: (_categories.length / 2)
-                .ceil(), // Show 2 categories per page
+            itemCount: (_categories.length / categoriesPerPage).ceil(),
             itemBuilder: (context, pageIndex) {
-              final startIndex = pageIndex * 2;
-              final endIndex = (startIndex + 2).clamp(0, _categories.length);
+              final startIndex = pageIndex * categoriesPerPage;
+              final endIndex = (startIndex + categoriesPerPage).clamp(0, _categories.length);
               final pageCategories = _categories.sublist(startIndex, endIndex);
 
               return Padding(
@@ -721,10 +812,8 @@ class _HomePageTabState extends State<HomePageTab>
                     return Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(
-                          right: categoryIndex == 0 && pageCategories.length > 1
-                              ? 8
-                              : 0,
-                          left: categoryIndex == 1 ? 8 : 0,
+                          right: categoryIndex < pageCategories.length - 1 ? 8 : 0,
+                          left: categoryIndex > 0 ? 8 : 0,
                         ),
                         child: _buildCategoryCard(category),
                       ),
@@ -737,21 +826,31 @@ class _HomePageTabState extends State<HomePageTab>
         ),
 
         // Page Indicators for Categories
-        if ((_categories.length / 2).ceil() > 1) ...[
+        if ((_categories.length / categoriesPerPage).ceil() > 1) ...[
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              (_categories.length / 2).ceil(),
-              (index) => Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentCategoryIndex == index
-                      ? Color(0xFF5F299E)
-                      : Colors.grey[300],
+              (_categories.length / categoriesPerPage).ceil(),
+              (index) => GestureDetector(
+                onTap: screenWidth >= 768 ? () {
+                  // Only enable tap functionality for web/desktop screens
+                  _categoriesPageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                } : null,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentCategoryIndex == index
+                        ? Color(0xFF5F299E)
+                        : Colors.grey[300],
+                  ),
                 ),
               ),
             ),
@@ -856,8 +955,11 @@ class _HomePageTabState extends State<HomePageTab>
     double rating,
     String students,
   ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768;
+    
     return Container(
-      width: 150,
+      width: isWeb ? 180 : 150, // Match recommended course size on web
       margin: const EdgeInsets.only(right: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -891,10 +993,7 @@ class _HomePageTabState extends State<HomePageTab>
                   top: 6,
                   right: 6,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 5,
-                      vertical: 2,
-                    ),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -963,21 +1062,147 @@ class _HomePageTabState extends State<HomePageTab>
     );
   }
 
-  // Learning Progress Section
-  Widget _buildLearningProgressSection() {
+  // Learning Progress Section with Slider
+  Widget _buildProgressSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final progressData = [
+      {
+        'title': 'Flutter Development Course',
+        'progress': 0.75,
+        'percentage': '75%',
+        'completed': '3 of 4 modules completed',
+        'gradient': [Colors.purple[400]!, Colors.purple[300]!],
+        'icon': Icons.trending_up_rounded,
+      },
+      {
+        'title': 'UI/UX Design Fundamentals',
+        'progress': 0.60,
+        'percentage': '60%',
+        'completed': '6 of 10 lessons completed',
+        'gradient': [Colors.blue[400]!, Colors.blue[300]!],
+        'icon': Icons.design_services_rounded,
+      },
+      {
+        'title': 'Data Structures & Algorithms',
+        'progress': 0.40,
+        'percentage': '40%',
+        'completed': '4 of 10 chapters completed',
+        'gradient': [Colors.green[400]!, Colors.green[300]!],
+        'icon': Icons.code_rounded,
+      },
+      {
+        'title': 'Mobile App Development',
+        'progress': 0.85,
+        'percentage': '85%',
+        'completed': '8 of 10 projects completed',
+        'gradient': [Colors.orange[400]!, Colors.orange[300]!],
+        'icon': Icons.phone_android_rounded,
+      },
+    ];
+
+    // Both mobile and web: Show progress cards in slider with 2-2 per slide
+    return Column(
+      children: [
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _progressPageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentProgressIndex = index;
+              });
+            },
+            itemCount: (progressData.length / 2).ceil(),
+            itemBuilder: (context, pageIndex) {
+              final startIndex = pageIndex * 2;
+              final endIndex = (startIndex + 2).clamp(0, progressData.length);
+              final pageProgress = progressData.sublist(startIndex, endIndex);
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  children: pageProgress.asMap().entries.map((entry) {
+                    final progressIndex = entry.key;
+                    final progress = entry.value;
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: progressIndex < pageProgress.length - 1 ? 8 : 0,
+                          left: progressIndex > 0 ? 8 : 0,
+                        ),
+                        child: _buildProgressCard(
+                          title: progress['title'] as String,
+                          progress: progress['progress'] as double,
+                          percentage: progress['percentage'] as String,
+                          completed: progress['completed'] as String,
+                          gradient: progress['gradient'] as List<Color>,
+                          icon: progress['icon'] as IconData,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          ),
+        ),
+          // Progress indicators
+          if ((progressData.length / 2).ceil() > 1) ...[
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                (progressData.length / 2).ceil(),
+                (index) => GestureDetector(
+                  onTap: screenWidth >= 768 ? () {
+                    // Only enable tap functionality for web/desktop screens
+                    _progressPageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  } : null,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentProgressIndex == index
+                          ? Color(0xFF5F299E)
+                          : Colors.grey[300],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+  // Individual Progress Card
+  Widget _buildProgressCard({
+    required String title,
+    required double progress,
+    required String percentage,
+    required String completed,
+    required List<Color> gradient,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          // colors: [Color(0xFF5F299E), Color(0xFF5F299E)],
-          colors: [Colors.purple[400]!, Colors.purple[300]!],
+          colors: gradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withValues(alpha: 0.3),
+            color: gradient[0].withValues(alpha: 0.3),
             spreadRadius: 0,
             blurRadius: 15,
             offset: const Offset(0, 8),
@@ -999,7 +1224,7 @@ class _HomePageTabState extends State<HomePageTab>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.trending_up_rounded,
+                      icon,
                       color: Colors.white,
                       size: 20,
                     ),
@@ -1025,9 +1250,9 @@ class _HomePageTabState extends State<HomePageTab>
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
-                  '75%',
+                  percentage,
                   style: TextStyle(
-                    color: Color(0xFF5F299E),
+                    color: gradient[0],
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -1037,8 +1262,10 @@ class _HomePageTabState extends State<HomePageTab>
           ),
           const SizedBox(height: 14),
           Text(
-            '${widget.selectedLanguage} Development Course',
+            title,
             style: const TextStyle(color: Colors.white, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 10),
           Container(
@@ -1049,7 +1276,7 @@ class _HomePageTabState extends State<HomePageTab>
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: 0.75,
+              widthFactor: progress,
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -1059,9 +1286,9 @@ class _HomePageTabState extends State<HomePageTab>
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '3 of 4 modules completed',
-            style: TextStyle(color: Colors.white, fontSize: 11),
+          Text(
+            completed,
+            style: const TextStyle(color: Colors.white, fontSize: 11),
           ),
         ],
       ),
@@ -1077,7 +1304,7 @@ class _HomePageTabState extends State<HomePageTab>
         physics: const BouncingScrollPhysics(),
         children: [
           _buildEnhancedCourseCard(
-            'Advanced ${widget.selectedLanguage}',
+            'Advanced Flutter',
             '\$45.00',
             'assets/images/developer.png',
             4.9,
@@ -1243,6 +1470,9 @@ class _HomePageTabState extends State<HomePageTab>
 
   // Special Offers Section
   Widget _buildSpecialOffersSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768; // Mobile breakpoint
+
     final offers = [
       {
         'percentage': '35%',
@@ -1266,7 +1496,7 @@ class _HomePageTabState extends State<HomePageTab>
         'imageAsset': 'assets/images/devop.jpg',
       },
       {
-        'percentage': '45%',
+        'percentage': '45%', 
         'title': 'Weekend Special!',
         'subtitle': 'Biggest programming discount',
         'backgroundColor': const Color(0xFFF59E0B),
@@ -1276,56 +1506,110 @@ class _HomePageTabState extends State<HomePageTab>
 
     return Column(
       children: [
-        // Single offer card with PageView
+        // Responsive offer slider with proper height for mobile
         SizedBox(
-          height:
-              160, // Increased from 140 to 160 for better content visibility
+          height: isMobile ? 220 : 160, // Increased height for mobile to fit content properly
           child: PageView.builder(
             controller: _offersPageController,
+            physics: const BouncingScrollPhysics(), // Better scroll physics for mobile
             onPageChanged: (index) {
               setState(() {
                 _currentOfferIndex = index;
               });
             },
-            itemCount: offers.length,
+            itemCount: isMobile ? offers.length : (offers.length / 2).ceil(), // Web shows 2 cards per slide
             itemBuilder: (context, index) {
-              final offer = offers[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: _buildOfferCard(
-                  percentage: offer['percentage'] as String,
-                  title: offer['title'] as String,
-                  subtitle: offer['subtitle'] as String,
-                  backgroundColor: offer['backgroundColor'] as Color,
-                  imageAsset: offer['imageAsset'] as String,
-                  shapeIndex: index,
-                ),
-              );
+              if (isMobile) {
+                // Mobile: 1 card per slide horizontally
+                final offer = offers[index];
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: _buildOfferCard(
+                    percentage: offer['percentage'] as String? ?? '',
+                    title: offer['title'] as String? ?? '',
+                    subtitle: offer['subtitle'] as String? ?? '',
+                    backgroundColor: offer['backgroundColor'] as Color? ?? Colors.grey,
+                    imageAsset: offer['imageAsset'] as String? ?? '',
+                    shapeIndex: index,
+                    isMobile: isMobile,
+                  ),
+                );
+              } else {
+                // Web: 2 cards per slide
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: [
+                      // First card
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 8),
+                          child: _buildOfferCard(
+                            percentage: offers[index * 2]['percentage'] as String? ?? '',
+                            title: offers[index * 2]['title'] as String? ?? '',
+                            subtitle: offers[index * 2]['subtitle'] as String? ?? '',
+                            backgroundColor: offers[index * 2]['backgroundColor'] as Color? ?? Colors.grey,
+                            imageAsset: offers[index * 2]['imageAsset'] as String? ?? '',
+                            shapeIndex: index * 2,
+                            isMobile: isMobile,
+                          ),
+                        ),
+                      ),
+                      // Second card (if exists)
+                      if (index * 2 + 1 < offers.length)
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 8),
+                            child: _buildOfferCard(
+                              percentage: offers[index * 2 + 1]['percentage'] as String? ?? '',
+                              title: offers[index * 2 + 1]['title'] as String? ?? '',
+                              subtitle: offers[index * 2 + 1]['subtitle'] as String? ?? '',
+                              backgroundColor: offers[index * 2 + 1]['backgroundColor'] as Color? ?? Colors.grey,
+                              imageAsset: offers[index * 2 + 1]['imageAsset'] as String? ?? '',
+                              shapeIndex: index * 2 + 1,
+                              isMobile: isMobile,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }
             },
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: isMobile ? 16 : 12), // More spacing on mobile
         // Dots indicator
-        _buildDotsIndicator(offers.length),
+        _buildOffersDotsIndicator(isMobile ? offers.length : (offers.length / 2).ceil(), isMobile),
       ],
     );
   }
 
-  // Dots Indicator
-  Widget _buildDotsIndicator(int itemCount) {
+  // Dots Indicator for Offers
+  Widget _buildOffersDotsIndicator(int itemCount, bool isMobile) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         itemCount,
-        (index) => Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: _currentOfferIndex == index ? 20 : 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: _currentOfferIndex == index
-                ? const Color(0xFF5F299E)
-                : Colors.grey[300],
-            borderRadius: BorderRadius.circular(4),
+        (index) => GestureDetector(
+          onTap: isMobile ? null : () {
+            // Only enable tap functionality for web/desktop screens
+            _offersPageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          },
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: isMobile ? 6 : 4), // More spacing on mobile
+            width: _currentOfferIndex == index ? (isMobile ? 24 : 20) : (isMobile ? 10 : 8), // Bigger dots on mobile
+            height: isMobile ? 10 : 8, // Bigger height on mobile
+            decoration: BoxDecoration(
+              color: _currentOfferIndex == index
+                  ? const Color(0xFF5F299E)
+                  : Colors.grey[300],
+              borderRadius: BorderRadius.circular(isMobile ? 5 : 4), // Bigger radius on mobile
+            ),
           ),
         ),
       ),
@@ -1354,14 +1638,15 @@ class _HomePageTabState extends State<HomePageTab>
     required Color backgroundColor,
     required String imageAsset,
     required int shapeIndex,
+    bool isMobile = false,
   }) {
     String couponCode = _generateCouponCode(percentage);
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 8), // No margin on mobile for full width appearance
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isMobile ? 20 : 16), // Bigger radius on mobile
         boxShadow: [
           BoxShadow(
             color: backgroundColor.withValues(alpha: 0.3),
@@ -1376,7 +1661,7 @@ class _HomePageTabState extends State<HomePageTab>
           // Background gradient overlay
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(isMobile ? 20 : 16), // Match main container radius
               gradient: LinearGradient(
                 colors: [
                   backgroundColor,
@@ -1391,14 +1676,14 @@ class _HomePageTabState extends State<HomePageTab>
           _buildBackgroundShapes(shapeIndex, backgroundColor),
           // Content
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(isMobile ? 20 : 16), // More padding on mobile
             child: Row(
               children: [
                 // Left side - Text content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween, // Center content on mobile
                     children: [
                       // Top content
                       Column(
@@ -1406,27 +1691,27 @@ class _HomePageTabState extends State<HomePageTab>
                         children: [
                           Text(
                             percentage,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 24,
+                              fontSize: isMobile ? 32 : 24, // Bigger on mobile
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          SizedBox(height: isMobile ? 8 : 6), // More spacing on mobile
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 14,
+                              fontSize: isMobile ? 16 : 14, // Bigger on mobile
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: isMobile ? 6 : 4), // More spacing on mobile
                           Text(
                             subtitle,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: isMobile ? 14 : 12, // Bigger on mobile
                               fontWeight: FontWeight.w500,
                               height: 1.2,
                             ),
@@ -1438,14 +1723,14 @@ class _HomePageTabState extends State<HomePageTab>
 
                       // Coupon code box
                       Container(
-                        margin: const EdgeInsets.only(top: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                        margin: EdgeInsets.only(top: isMobile ? 12 : 8), // More margin on mobile
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isMobile ? 12 : 8, // More padding on mobile
+                          vertical: isMobile ? 6 : 4,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(isMobile ? 8 : 6), // Bigger radius on mobile
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.1),
@@ -1460,14 +1745,14 @@ class _HomePageTabState extends State<HomePageTab>
                             Icon(
                               Icons.local_offer,
                               color: backgroundColor,
-                              size: 14,
+                              size: isMobile ? 16 : 14, // Bigger icon on mobile
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: isMobile ? 6 : 4), // More spacing on mobile
                             Text(
                               couponCode,
                               style: TextStyle(
                                 color: backgroundColor,
-                                fontSize: 11,
+                                fontSize: isMobile ? 13 : 11, // Bigger text on mobile
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
                               ),
@@ -1478,17 +1763,17 @@ class _HomePageTabState extends State<HomePageTab>
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: isMobile ? 16 : 12), // More spacing on mobile
                 // Right side - Image
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: isMobile ? 100 : 80, // Bigger image on mobile
+                  height: isMobile ? 100 : 80,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(isMobile ? 16 : 12), // Bigger radius on mobile
                     color: Colors.white.withValues(alpha: 0.1),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(isMobile ? 16 : 12), // Match container radius
                     child: Image.asset(
                       imageAsset,
                       fit: BoxFit.cover,
@@ -1496,7 +1781,7 @@ class _HomePageTabState extends State<HomePageTab>
                         return Container(
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(isMobile ? 16 : 12), // Match container radius
                           ),
                           child: const Icon(
                             Icons.local_offer,

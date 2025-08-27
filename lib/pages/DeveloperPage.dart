@@ -15,9 +15,10 @@ class _DeveloperPagesState extends State<DeveloperPages>
   late PageController _pageController;
 
   final List<Map<String, dynamic>> languages = [
-    {
+    { 
       'name': 'Java',
-      'icon': Icons.coffee,
+      'icon': Icons.coffee,  
+      
       'color': Color.fromARGB(255, 151, 88, 0),
     },
     {
@@ -26,31 +27,26 @@ class _DeveloperPagesState extends State<DeveloperPages>
       'color': Color.fromARGB(255, 115, 65, 252),
     },
     {
-      'name': 'SpringBoot',
-      'icon': Icons.eco,
-      'color': Color.fromARGB(255, 75, 141, 31),
-    },
-    {
-      'name': 'MERN',
-      'icon': Icons.web,
+      'name': 'Swift',
+      'icon': Icons.phone_iphone,
       'color': Color.fromARGB(255, 37, 148, 179),
     },
     {
-      'name': 'MEAN',
+      'name': 'MEAN',  
       'icon': Icons.code,
       'color': Color.fromARGB(255, 143, 0, 31),
     },
     {
       'name': 'Python',
       'icon': Icons.code,
-      'color': Color.fromARGB(255, 55, 118, 171),
+      'color': Color.fromARGB(255, 55, 118, 171), 
     },
     {
       'name': 'React Native',
       'icon': Icons.phone_android,
       'color': Color.fromARGB(255, 97, 218, 251),
     },
-    {
+    {  
       'name': 'Flutter',
       'icon': Icons.flutter_dash,
       'color': Color.fromARGB(255, 0, 188, 212),
@@ -252,8 +248,18 @@ class _DeveloperPagesState extends State<DeveloperPages>
 
   Widget _buildDotIndicators() {
     // Calculate how many cards to show per slide based on screen width
-    int cardsPerSlide = MediaQuery.of(context).size.width < 1000 ? 4 : 5;
-    int totalSlides = (languages.length / cardsPerSlide).ceil();
+    int cardsPerSlide;
+    int totalSlides;
+    
+    if (MediaQuery.of(context).size.width <= 800) {
+      // Mobile layout: 1 card per slide
+      cardsPerSlide = 1;
+      totalSlides = languages.length;
+    } else {
+      // Web layout: exactly 4 cards per slide
+      cardsPerSlide = 4;
+      totalSlides = (languages.length / cardsPerSlide).ceil();
+    }
     
     // Debug print to see the values
     print('Cards per slide: $cardsPerSlide, Total slides: $totalSlides, Current slide: $_currentSlide');
@@ -327,23 +333,23 @@ class _DeveloperPagesState extends State<DeveloperPages>
     );
   }
 
-  // Mobile layout - responsive and no scrolling issues
+
   Widget _buildMobileLayout(double screenWidth, double screenHeight) {
-    // Responsive values based on screen size - adjusted to prevent overflow
+    
     double horizontalPadding = screenWidth < 360 ? 20 : 30;
     double titleFontSize = screenWidth < 360 ? 18 : 20;
     double subtitleFontSize = screenWidth < 360 ? 12 : 14;
-    double imageHeight = screenHeight < 700 ? 100 : 120; // Reduced image height
-    double cardHeight = screenHeight < 700 ? 60 : 80; // Reduced card height
+    double imageHeight = screenHeight < 700 ? 100 : 120; 
+    double cardHeight = screenHeight < 700 ? 80 : 100; 
 
     return SafeArea(
       child: Column(
         children: [
-          // Enhanced top image with animation - reduced height
+          
           FadeTransition(
             opacity: _fadeAnimation,
             child: Container(
-              height: screenHeight * 0.12, // Reduced from 15% to 12%
+              height: screenHeight * 0.12, 
               child: Image.asset(
                 'assets/images/shape7.png',
                 width: double.infinity,
@@ -352,25 +358,26 @@ class _DeveloperPagesState extends State<DeveloperPages>
             ),
           ),
 
-          // Main content - use Flexible instead of Expanded to prevent overflow
+        
           Flexible(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
               child: SlideTransition(
                 position: _slideAnimation,
+
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: screenHeight * 0.015), // Reduced spacing
+                      SizedBox(height: screenHeight * 0.015), 
 
-                      // Enhanced title - responsive
+                      
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: screenWidth < 360 ? 15 : 20,
-                          vertical: screenWidth < 360 ? 8 : 10, // Reduced padding
+                          vertical: screenWidth < 360 ? 8 : 10, 
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -445,17 +452,10 @@ class _DeveloperPagesState extends State<DeveloperPages>
                             child: PageView.builder(
                               controller: _pageController,
                               onPageChanged: _handleSlideChange,
-                              itemCount: (languages.length / 3).ceil(), // Show 3 cards per slide on mobile
+                              itemCount: languages.length, // Show 1 card per slide on mobile
                               itemBuilder: (context, slideIndex) {
-                                // Calculate start and end indices for this slide
-                                int startIndex = slideIndex * 3;
-                                int endIndex = (startIndex + 3).clamp(0, languages.length);
-                                
-                                return Column(
-                                  children: [
-                                    for (int i = startIndex; i < endIndex; i++)
-                                      _buildLanguageCard(languages[i]),
-                                  ],
+                                return Center(
+                                  child: _buildLanguageCard(languages[slideIndex]),
                                 );
                               },
                             ),
@@ -665,13 +665,13 @@ class _DeveloperPagesState extends State<DeveloperPages>
     );
   }
 
-  // Web language row - slider showing multiple cards per slide
+  // Web language row - slider showing exactly 4 cards per slide
   Widget _buildWebLanguageRow(double screenWidth, double cardHeight) {
     // Responsive spacing based on screen width
     double cardSpacing = screenWidth < 1000 ? 8 : screenWidth < 1200 ? 12 : 16;
     
-    // Calculate how many cards to show per slide based on screen width
-    int cardsPerSlide = screenWidth < 1000 ? 4 : 5;
+    // Fixed: Always show exactly 4 cards per slide on web
+    int cardsPerSlide = 4;
     
     // Calculate total number of slides needed
     int totalSlides = (languages.length / cardsPerSlide).ceil();
@@ -679,49 +679,49 @@ class _DeveloperPagesState extends State<DeveloperPages>
     return SizedBox(
       height: cardHeight,
       child: PageView.builder(
-        controller: _pageController,
-        onPageChanged: _handleSlideChange,
-        itemCount: totalSlides,
-        itemBuilder: (context, slideIndex) {
-          // Calculate start and end indices for this slide
-          int startIndex = slideIndex * cardsPerSlide;
-          int endIndex = (startIndex + cardsPerSlide).clamp(0, languages.length);
+controller: _pageController,
+onPageChanged: _handleSlideChange,
+itemCount: totalSlides,
+itemBuilder: (context, slideIndex) {
+// Calculate start and end indices for this slide
+int startIndex = slideIndex * cardsPerSlide;
+int endIndex = (startIndex + cardsPerSlide).clamp(0, languages.length);
           
-          // Create a list of cards for this slide
-          List<Widget> slideCards = [];
-          for (int i = startIndex; i < endIndex; i++) {
-            slideCards.add(
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: cardSpacing / 2),
-                  child: _buildWebLanguageCard(languages[i], cardHeight),
-                ),
-              ),
-            );
-          }
+// Create a list of cards for this slide
+List<Widget> slideCards = [];
+for (int i = startIndex; i < endIndex; i++) {
+slideCards.add(
+Expanded(
+child: Container(
+margin: EdgeInsets.symmetric(horizontal: cardSpacing / 2),
+child: _buildWebLanguageCard(languages[i], cardHeight),
+),
+),
+);
+}
           
-          // If we don't have enough cards to fill the slide, add empty spaces
-          while (slideCards.length < cardsPerSlide) {
-            slideCards.add(
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: cardSpacing / 2),
-                ),
-              ),
-            );
-          }
+// If we don't have enough cards to fill the slide, add empty spaces
+while (slideCards.length < cardsPerSlide) {
+slideCards.add(
+Expanded(
+child: Container(
+margin: EdgeInsets.symmetric(horizontal: cardSpacing / 2),
+),
+),
+);
+}
           
-          return Row(
-            children: slideCards,
-          );
-        },
-      ),
-    );
-  }
+return Row(
+children: slideCards,
+);
+},
+),
+);
+}
 
-  // Web language card - matches the image style exactly
-  Widget _buildWebLanguageCard(Map<String, dynamic> lang, double cardHeight) {
-    final isSelected = _selectedLanguage == lang['name'];
+// Web language card - matches the image style exactly
+Widget _buildWebLanguageCard(Map<String, dynamic> lang, double cardHeight) {
+final isSelected = _selectedLanguage == lang['name'];
 
     // Responsive values based on card height
     double iconSize = cardHeight * 0.25; // 25% of card height

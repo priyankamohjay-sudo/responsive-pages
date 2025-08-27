@@ -252,8 +252,18 @@ class _TesterPagesState extends State<TesterPages>
 
   Widget _buildDotIndicators() {
     // Calculate how many cards to show per slide based on screen width
-    int cardsPerSlide = MediaQuery.of(context).size.width < 1000 ? 4 : 5;
-    int totalSlides = (testingTools.length / cardsPerSlide).ceil();
+    int cardsPerSlide;
+    int totalSlides;
+    
+    if (MediaQuery.of(context).size.width <= 800) {
+      // Mobile layout: 1 card per slide
+      cardsPerSlide = 1;
+      totalSlides = testingTools.length;
+    } else {
+      // Web layout: multiple cards per slide
+      cardsPerSlide = MediaQuery.of(context).size.width < 1000 ? 4 : 5;
+      totalSlides = (testingTools.length / cardsPerSlide).ceil();
+    }
     
     // Debug print to see the values
     print('Cards per slide: $cardsPerSlide, Total slides: $totalSlides, Current slide: $_currentSlide');
@@ -445,17 +455,10 @@ class _TesterPagesState extends State<TesterPages>
                             child: PageView.builder(
                               controller: _pageController,
                               onPageChanged: _handleSlideChange,
-                              itemCount: (testingTools.length / 3).ceil(), // Show 3 cards per slide on mobile
+                              itemCount: testingTools.length, // Show 1 card per slide on mobile
                               itemBuilder: (context, slideIndex) {
-                                // Calculate start and end indices for this slide
-                                int startIndex = slideIndex * 3;
-                                int endIndex = (startIndex + 3).clamp(0, testingTools.length);
-                                
-                                return Column(
-                                  children: [
-                                    for (int i = startIndex; i < endIndex; i++)
-                                      _buildLanguageCard(testingTools[i]),
-                                  ],
+                                return Center(
+                                  child: _buildLanguageCard(testingTools[slideIndex]),
                                 );
                               },
                             ),

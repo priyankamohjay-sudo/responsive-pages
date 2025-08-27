@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'CourseDetailsPage.dart';
 
 class AllCoursesPage extends StatefulWidget {
-  const AllCoursesPage({super.key});
+  final String selectedLanguage;
+
+  const AllCoursesPage({super.key, required this.selectedLanguage});
 
   @override
   State<AllCoursesPage> createState() => _AllCoursesPageState();
@@ -11,6 +13,10 @@ class AllCoursesPage extends StatefulWidget {
 class _AllCoursesPageState extends State<AllCoursesPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+
+  // Filter variables
+  double _minRating = 0.0;
+  double _maxPrice = 200.0;
   
   // Sample course data with ratings and prices
   final List<Map<String, dynamic>> courses = [
@@ -129,70 +135,108 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
   ];
 
   List<Map<String, dynamic>> get filteredCourses {
-    if (_searchQuery.isEmpty) {
-      return courses;
-    }
     return courses.where((course) {
-      return course['title'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             course['author'].toLowerCase().contains(_searchQuery.toLowerCase());
+      // Search filter
+      bool matchesSearch = _searchQuery.isEmpty ||
+          course['title'].toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          course['author'].toLowerCase().contains(_searchQuery.toLowerCase());
+
+      // Rating filter
+      bool matchesRating = course['rating'] >= _minRating;
+
+      // Price filter
+      bool matchesPrice = course['price'] <= _maxPrice;
+
+      return matchesSearch && matchesRating && matchesPrice;
     }).toList();
   }
 
-  Widget _buildNavItem(IconData icon, int index, {bool isSelected = false}) {
-    return GestureDetector(
-      onTap: () {
-        if (index == 0) {
-          // Home - go back to Dashboard
-          Navigator.pop(context);
-        } else if (index == 1) {
-          // Already on All Courses page, do nothing
-        }
-        // Add other navigation logic as needed
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text('Filter Courses'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Minimum Rating: ${_minRating.toStringAsFixed(1)}'),
+                  Slider(
+                    value: _minRating,
+                    min: 0.0,
+                    max: 5.0,
+                    divisions: 10,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        _minRating = value;
+                      });
+                    },
+                  ),
+                  SizedBox(height: 16),
+                  Text('Maximum Price: \$${_maxPrice.toStringAsFixed(0)}'),
+                  Slider(
+                    value: _maxPrice,
+                    min: 0.0,
+                    max: 200.0,
+                    divisions: 20,
+                    onChanged: (value) {
+                      setDialogState(() {
+                        _maxPrice = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _minRating = 0.0;
+                      _maxPrice = 200.0;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Reset'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {});
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Apply'),
+                ),
+              ],
+            );
+          },
+        );
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white.withValues(alpha: 0.25)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          child: Icon(
-            icon,
-            color: isSelected
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.7),
-            size: isSelected ? 28 : 24,
-          ),
-        ),
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-        
-        // Use new design for web/desktop/mac (width > 800px)
-        if (screenWidth > 800) {
-          return _buildWebLayout();
-        } else {
-          return _buildMobileLayout();
-        }
-      },
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenWidth = constraints.maxWidth;
+          
+          // Use new design for web/desktop/mac (width > 800px)
+          if (screenWidth > 800) {
+            return _buildWebContent();
+          } else {
+            return _buildMobileContent();
+          }
+        },
+      ),
     );
   }
 
-  // Web/Desktop/Mac Layout - New Design matching the image
-  Widget _buildWebLayout() {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
+  // Web/Desktop/Mac Content - New Design matching the image
+  Widget _buildWebContent() {
+    return Column(
         children: [
           // Header Section - Purple background like in image
           Container(
@@ -211,9 +255,16 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top row with title and action icons
+                // Top row with back button, title and action icons
                 Row(
                   children: [
+                    // Back button - Left side
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: Colors.white, size: 24),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                    ),
+                    SizedBox(width: 16),
                     // Title
                     Expanded(
                       child: Column(
@@ -233,7 +284,7 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
                             'Start your learning journey with our comprehensive course collection',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withValues(alpha: 0.9),
+                              color: Colors.white.withOpacity(0.9),
                               fontWeight: FontWeight.w400,
                               height: 1.4,
                             ),
@@ -272,7 +323,7 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 4,
                   offset: Offset(0, 2),
                 ),
@@ -318,7 +369,7 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
                       ),
                       child: IconButton(
                         icon: Icon(Icons.tune, color: Colors.white, size: 20),
-                        onPressed: () {},
+                        onPressed: _showFilterDialog,
                         padding: EdgeInsets.zero,
                       ),
                     ),
@@ -344,11 +395,10 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
-  // Web Course Card - Exact Design from Image
+  // Web Course Card - Horizontal Layout like second image
   Widget _buildWebCourseCard(Map<String, dynamic> course) {
     return Container(
       margin: EdgeInsets.only(bottom: 16),
@@ -357,7 +407,7 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+                  color: Colors.black.withOpacity(0.08),
             blurRadius: 8,
             offset: Offset(0, 2),
             spreadRadius: 0,
@@ -383,13 +433,13 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
             );
           },
           child: Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(16),
             child: Row(
               children: [
-                // Course Image - Left side
+                // Course Image - Left side (larger like in second image)
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: 200,
+                  height: 120,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
                     image: DecorationImage(
@@ -399,139 +449,228 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
                   ),
                 ),
                 SizedBox(width: 20),
-                
-                // Course Details - Center
+
+                // Course Details - Center (like second image layout)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Course Title - Larger and bold
                       Text(
                         course['title'],
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
+                          height: 1.3,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 6),
+                      SizedBox(height: 8),
+
+                      // Course Description/Subtitle
                       Text(
-                        course['author'],
+                        'Build powerful ${course['title'].toLowerCase()} skills. Traditional, Advanced, Multimodal & Agentic AI with comprehensive learning path',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
-                          fontWeight: FontWeight.w400,
+                          height: 1.4,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 12),
+
+                      // Author and metadata
                       Row(
                         children: [
-                          Icon(Icons.star, color: Color(0xFFFFD700), size: 18),
-                          SizedBox(width: 4),
                           Text(
-                            '${course['rating']}',
+                            course['author'],
                             style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(width: 16),
+                          SizedBox(width: 8),
                           Text(
-                            '\$${course['price']}',
+                            '• 1 other',
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF8B5CF6),
+                              fontSize: 13,
+                              color: Colors.grey[500],
                             ),
                           ),
                         ],
                       ),
                       SizedBox(height: 8),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFFF3CD),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Color(0xFFFFC107),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              size: 14,
-                              color: Color(0xFFD97706),
+
+                      // Updated date and course info
+                      Row(
+                        children: [
+                          Text(
+                            'Updated August 2025',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
                             ),
-                            SizedBox(width: 4),
-                            Text(
-                              '${course['accessDays']} days access',
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            '${course['accessDays']} total hours',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            '118 lectures',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'All Levels',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+
+                      // Rating and badge
+                      Row(
+                        children: [
+                          // Rating
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFFFF3CD),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${course['rating']}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFD97706),
+                                  ),
+                                ),
+                                SizedBox(width: 2),
+                                Icon(Icons.star, color: Color(0xFFFFD700), size: 12),
+                                Icon(Icons.star, color: Color(0xFFFFD700), size: 12),
+                                Icon(Icons.star, color: Color(0xFFFFD700), size: 12),
+                                Icon(Icons.star, color: Color(0xFFFFD700), size: 12),
+                                Icon(Icons.star_half, color: Color(0xFFFFD700), size: 12),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            '(106)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          // Highest Rated badge
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFFFE4B5),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Highest Rated',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFD97706),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                
-                // Action buttons - Right side
+
+                // Price and Action - Right side (like second image)
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Favorite button - Top right
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.favorite_border,
-                          color: Colors.grey[400],
-                          size: 20,
-                        ),
-                        onPressed: () {},
-                        padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                    IconButton(
+                      icon: Icon(
+                        Icons.favorite_border,
+                        color: Colors.grey[400],
+                        size: 24,
                       ),
+                      onPressed: () {},
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
                     ),
-                    // Start Course button - Bottom right
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CourseDetailsPage(
-                              courseTitle: course['title'],
-                              courseAuthor: course['author'],
-                              courseImage: course['image'],
-                              progress: 0.0,
-                              progressText: '0% completed',
+
+                    SizedBox(height: 20),
+
+                    // Start Course button and Price row
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Start Course button - Left of price
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed( 
+                              context, 
+                              '/addtocart',
+                              arguments: {
+                                'courseTitle': course['title'],
+                                'courseAuthor': course['author'],
+                                'courseImage': course['image'],
+                                'coursePrice': '₹499',
+                              },
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF5F299E),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            elevation: 2,
+                            minimumSize: Size(0, 32),
+                          ),
+                          child: Text(
+                            'Start Course',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF8B5CF6),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        elevation: 2,
-                        minimumSize: Size(0, 36),
-                      ),
-                      child: Text(
-                        'Start Course',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        SizedBox(width: 12),
+                        
+                        // Price - Large and prominent like second image
+                        Text(
+                          '₹499',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -539,6 +678,65 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // Mobile Content - For use as tab content (no Scaffold/AppBar)
+  Widget _buildMobileContent() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Section
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF5F299E), Color(0xFF8B5CF6)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Explore All Courses',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Start your learning journey with our comprehensive course collection',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 20),
+
+          // Course list using new data but keeping mobile design
+          ...filteredCourses.map((course) => Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: _buildCourseCard(
+              context,
+              imageAsset: course['image'],
+              title: course['title'],
+              author: course['author'],
+            ),
+          )),
+
+          SizedBox(height: 20),
+        ],
       ),
     );
   }
@@ -596,7 +794,7 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
                     'Start your learning journey with our comprehensive course collection',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Colors.white.withOpacity(0.9),
                     ),
                   ),
                 ],
@@ -613,48 +811,10 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
                 title: course['title'],
                 author: course['author'],
               ),
-            )).toList(),
+            )),
 
             SizedBox(height: 20),
           ],
-        ),
-      ),
-      // Enhanced Bottom Navigation Bar
-      bottomNavigationBar: Container(
-        height: 80,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF5F299E), Color(0xFF5F299E), Color(0xFF5F299E)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0xFF5F299E).withValues(alpha: 0.3),
-              spreadRadius: 0,
-              blurRadius: 20,
-              offset: const Offset(0, -10),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Icons.home_rounded, 0, isSelected: false),
-                _buildNavItem(
-                  Icons.language_rounded,
-                  1,
-                  isSelected: true,
-                ), // Current page
-                _buildNavItem(Icons.play_circle_fill, 2, isSelected: false),
-                _buildNavItem(Icons.bookmark_rounded, 3, isSelected: false),
-                _buildNavItem(Icons.person_rounded, 4, isSelected: false),
-              ],
-            ),
-          ),
         ),
       ),
     );
@@ -682,15 +842,15 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
         );
       },
       borderRadius: BorderRadius.circular(12),
-      splashColor: Colors.blue.withValues(alpha: 0.1),
-      highlightColor: Colors.blue.withValues(alpha: 0.05),
+                      splashColor: Colors.blue.withOpacity(0.1),
+                      highlightColor: Colors.blue.withOpacity(0.05),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Colors.grey.withOpacity(0.1),
               spreadRadius: 1,
               blurRadius: 8,
               offset: Offset(0, 2),
@@ -809,7 +969,7 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
                     ),
                     padding: EdgeInsets.symmetric(vertical: 14),
                     elevation: 2,
-                    shadowColor: Color(0xFF5F299E).withValues(alpha: 0.3),
+                    shadowColor: Color(0xFF5F299E).withOpacity(0.3),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -834,4 +994,4 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
       ),
     );
   }
-}
+} 

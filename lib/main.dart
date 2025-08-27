@@ -10,6 +10,7 @@ import 'package:fluttertest/pages/InterestBasedPage.dart';
 import 'package:fluttertest/pages/LoginPage.dart';
 import 'package:fluttertest/pages/SignUpPage.dart';
 import 'package:fluttertest/pages/TesterPage.dart';
+import 'package:fluttertest/pages/AllCoursesPage.dart';
 import 'package:fluttertest/providers/theme_provider.dart';
 import 'package:fluttertest/providers/app_state_provider.dart';
 import 'package:fluttertest/providers/navigation_provider.dart';
@@ -67,6 +68,7 @@ class ScreenPage extends StatelessWidget {
               coursePrice: '\$99.00',
             ),
             '/cart': (context) => CartPage(),
+            '/all-courses': (context) => AllCoursesPage(selectedLanguage: 'English'),
           },
         );
       },

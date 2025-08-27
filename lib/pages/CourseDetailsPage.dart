@@ -97,7 +97,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
         // Certificate Preview Lightbox
         if (_showCertificatePreview)
           Container(
-            color: Colors.black.withValues(alpha: 0.8),
+                  color: Colors.black.withOpacity(0.8),
             child: Center(
               child: Container(
                 margin: EdgeInsets.all(20),
@@ -338,7 +338,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
               child: Container(
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Column(
@@ -561,6 +561,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
   }
 
   Widget _buildCourseFeatures() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768; // Web/Desktop/M sh ok breakpoint
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(16),
@@ -588,10 +591,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
           ),
           SizedBox(height: 16),
           GridView.count(
-            crossAxisCount: 2,
+            crossAxisCount: isWeb ? 3 : 2, // 3 columns on web, 2 on mobile
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
-            childAspectRatio: 3,
+            childAspectRatio: isWeb ? 2.5 : 3, // Adjust aspect ratio for web
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             children: [
@@ -644,6 +647,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
   }
 
   Widget _buildInstructorSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768;
+
     List<Map<String, String>> instructors = [
       {
         'name': 'Hellio Jamsh',
@@ -662,6 +668,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
         'title': 'UI/UX Design',
         'subtitle': 'Senior Designer at Google',
         'image': 'assets/images/instructor3.png',
+      },
+      {
+        'name': 'Emma Wilson',
+        'title': 'Data Science',
+        'subtitle': 'PhD in Data Science from Stanford',
+        'image': 'assets/images/instructor4.png',
       },
     ];
 
@@ -700,9 +712,33 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
                   _currentInstructorIndex = index;
                 });
               },
-              itemCount: instructors.length,
-              itemBuilder: (context, index) {
-                return _buildInstructorCard(instructors[index]);
+              itemCount: isWeb ? (instructors.length / 2).ceil() : instructors.length,
+              itemBuilder: (context, pageIndex) {
+                if (isWeb) {
+                  // Web: Show 2 instructors per slide
+                  final startIndex = pageIndex * 2;
+                  final endIndex = (startIndex + 2).clamp(0, instructors.length);
+                  final pageInstructors = instructors.sublist(startIndex, endIndex);
+
+                  return Row(
+                    children: pageInstructors.asMap().entries.map((entry) {
+                      final instructorIndex = entry.key;
+                      final instructor = entry.value;
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: instructorIndex < pageInstructors.length - 1 ? 8 : 0,
+                            left: instructorIndex > 0 ? 8 : 0,
+                          ),
+                          child: _buildInstructorCard(instructor),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                } else {
+                  // Mobile: Show 1 instructor per slide (unchanged)
+                  return _buildInstructorCard(instructors[pageIndex]);
+                }
               },
             ),
           ),
@@ -710,7 +746,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              instructors.length,
+              isWeb ? (instructors.length / 2).ceil() : instructors.length,
               (index) => Container(
                 margin: EdgeInsets.symmetric(horizontal: 4),
                 width: 8,
@@ -780,304 +816,376 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
   }
 
   Widget _buildCertificationPreviewSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header text
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 4),
+      child: isWeb ? _buildWebCertificateLayout() : _buildMobileCertificateLayout(),
+    );
+  }
+
+  Widget _buildWebCertificateLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Left side: Text content
+        Expanded(
+          flex: 1,
+          child: Padding(
+            padding: EdgeInsets.only(right: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Get a completion certificate',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 20),
                 Text(
                   'Share your certificate with prospective employers and your professional network on LinkedIn.',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     color: Colors.grey[700],
-                    height: 1.5,
+                    height: 1.6,
+                  ),
+                ),
+                SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showCertificatePreview = true;
+                    });
+                  },
+                  icon: Icon(Icons.visibility, color: Colors.white),
+                  label: Text(
+                    'Preview Certificate',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF1E88E5),
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 24),
-          // Blue/Yellow background with certificate preview
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+        ),
+        // Right side: Certificate preview
+        Expanded(
+          flex: 1,
+          child: _buildCertificatePreviewCard(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileCertificateLayout() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header text
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Get a completion certificate',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: Offset(0, 6),
+              SizedBox(height: 16),
+              Text(
+                'Share your certificate with prospective employers and your professional network on LinkedIn.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[700],
+                  height: 1.5,
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 24),
+        _buildCertificatePreviewCard(),
+      ],
+    );
+  }
+
+  Widget _buildCertificatePreviewCard() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.3),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Yellow accent shapes
+          Positioned(
+            top: -20,
+            right: -20,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Color(0xFFFFC107).withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
             ),
-            child: Stack(
+          ),
+          Positioned(
+            bottom: -30,
+            left: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Color(0xFFFFC107).withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // Yellow bottom accent bar
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 8,
+              decoration: BoxDecoration(
+                color: Color(0xFFFFC107),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+              ),
+            ),
+          ),
+          // Content
+          Padding(
+            padding: EdgeInsets.all(20),
+            child: Column(
               children: [
-                // Yellow accent shapes
-                Positioned(
-                  top: -20,
-                  right: -20,
-                  child: Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFC107).withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -30,
-                  left: -30,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFC107).withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-                // Yellow bottom accent bar
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFFFC107),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(16),
-                        bottomRight: Radius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-                // Content
-                Padding(
+                // Certificate Preview
+                Container(
+                  width: double.infinity,
+                  height: 280,
                   padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
-                      // Certificate Preview
-                      Container(
-                        width: double.infinity,
-                        height: 280,
-                        padding: EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 8,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            // Header with logos
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    SizedBox(width: 2),
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: Colors.green,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    SizedBox(width: 2),
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    SizedBox(width: 2),
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: Colors.yellow,
-                                        borderRadius: BorderRadius.circular(2),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'Microsoft',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ],
+                      // Header with logos
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(2),
                                 ),
-                                Text(
-                                  'mohlay Infotech',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFFFFC107),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            // Main content - Center Aligned
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'DECLARATION OF',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1565C0),
-                                      letterSpacing: 2.0,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Text(
-                                    'COMPLETION',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1565C0),
-                                      letterSpacing: 1.5,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Your Name',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xFF1565C0),
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.symmetric(vertical: 8),
-                                    height: 1,
-                                    width: 180,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.yellow[700]!,
-                                          Colors.black,
-                                          Colors.yellow[700]!,
-                                        ],
-                                        stops: [0.0, 0.5, 1.0],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'has successfully completed the online course',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.black87,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  SizedBox(height: 12),
-                                  Text(
-                                    'FLUTTER DEVELOPMENT',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1565C0),
-                                      letterSpacing: 1.0,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'This professional has demonstrated initiative and a commitment\nto deepening their skills and advancing their career. Well done!',
-                                    style: TextStyle(
-                                      fontSize: 8,
-                                      color: Colors.black87,
-                                      height: 1.3,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
                               ),
+                              SizedBox(width: 2),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              SizedBox(width: 2),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              SizedBox(width: 2),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.yellow,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Microsoft',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            'mohlay Infotech',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFFFC107),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 20),
-                      // Preview button
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _showCertificatePreview = true;
-                          });
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
+                      // Main content - Center Aligned
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'DECLARATION OF',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1565C0),
+                                letterSpacing: 2.0,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                          ),
-                          child: Text(
-                            'Preview',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                            Text(
+                              'COMPLETION',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1565C0),
+                                letterSpacing: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                          ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Your Name',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF1565C0),
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 8),
+                              height: 1,
+                              width: 180,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.yellow[700]!,
+                                    Colors.black,
+                                    Colors.yellow[700]!,
+                                  ],
+                                  stops: [0.0, 0.5, 1.0],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'has successfully completed the online course',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'FLUTTER DEVELOPMENT',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1565C0),
+                                letterSpacing: 1.0,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'This professional has demonstrated initiative and a commitment\nto deepening their skills and advancing their career. Well done!',
+                              style: TextStyle(
+                                fontSize: 8,
+                                color: Colors.black87,
+                                height: 1.3,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
                     ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                // Preview button
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showCertificatePreview = true;
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      'Preview',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -1089,6 +1197,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
   }
 
   Widget _buildCertificationSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768;
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: EdgeInsets.all(16),
@@ -1115,49 +1226,93 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
             ),
           ),
           SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCertificationCard(
-                  'Skills You Will Gain',
-                  'Explore course skills',
-                  Icons.card_membership,
-                  Colors.amber,
+          if (isWeb) ...[
+            // Web: Single row with 4 cards
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Skills You Will Gain',
+                    'Explore course skills',
+                    Icons.card_membership,
+                    Colors.amber,
+                  ),
                 ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _buildCertificationCard(
-                  'Video Lessons',
-                  '45+ HD video tutorials',
-                  Icons.play_circle_filled,
-                  Colors.red,
+                SizedBox(width: 12),
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Video Lessons',
+                    '45+ HD video tutorials',
+                    Icons.play_circle_filled,
+                    Colors.red,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildCertificationCard(
-                  'Downloadable Resources',
-                  'PDFs, code files & more',
-                  Icons.download,
-                  Colors.green,
+                SizedBox(width: 12),
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Downloadable Resources',
+                    'PDFs, code files & more',
+                    Icons.download,
+                    Colors.green,
+                  ),
                 ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _buildCertificationCard(
-                  'Lifetime Access',
-                  'Learn at your own pace',
-                  Icons.all_inclusive,
-                  Colors.purple,
+                SizedBox(width: 12),
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Lifetime Access',
+                    'Learn at your own pace',
+                    Icons.all_inclusive,
+                    Colors.purple,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ] else ...[
+            // Mobile: Two rows with 2 cards each (unchanged)
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Skills You Will Gain',
+                    'Explore course skills',
+                    Icons.card_membership,
+                    Colors.amber,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Video Lessons',
+                    '45+ HD video tutorials',
+                    Icons.play_circle_filled,
+                    Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Downloadable Resources',
+                    'PDFs, code files & more',
+                    Icons.download,
+                    Colors.green,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _buildCertificationCard(
+                    'Lifetime Access',
+                    'Learn at your own pace',
+                    Icons.all_inclusive,
+                    Colors.purple,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -1201,6 +1356,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
   }
 
   Widget _buildTestimonialsSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768;
+
     List<Map<String, String>> testimonials = [
       {
         'name': 'John Smith',
@@ -1222,6 +1380,13 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
         'comment':
             'This course helped me land my dream job. The projects were very helpful.',
         'avatar': 'MB',
+      },
+      {
+        'name': 'Sarah Wilson',
+        'rating': '4.7',
+        'comment':
+            'Amazing learning experience with hands-on projects and real-world examples.',
+        'avatar': 'SW',
       },
     ];
 
@@ -1260,12 +1425,36 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
                   _currentTestimonialIndex = index;
                 });
               },
-              itemCount: testimonials.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: EdgeInsets.only(right: 16),
-                  child: _buildTestimonialCard(testimonials[index]),
-                );
+              itemCount: isWeb ? (testimonials.length / 2).ceil() : testimonials.length,
+              itemBuilder: (context, pageIndex) {
+                if (isWeb) {
+                  // Web: Show 2 testimonials per slide
+                  final startIndex = pageIndex * 2;
+                  final endIndex = (startIndex + 2).clamp(0, testimonials.length);
+                  final pageTestimonials = testimonials.sublist(startIndex, endIndex);
+
+                  return Row(
+                    children: pageTestimonials.asMap().entries.map((entry) {
+                      final testimonialIndex = entry.key;
+                      final testimonial = entry.value;
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: testimonialIndex < pageTestimonials.length - 1 ? 8 : 0,
+                            left: testimonialIndex > 0 ? 8 : 0,
+                          ),
+                          child: _buildTestimonialCard(testimonial),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                } else {
+                  // Mobile: Show 1 testimonial per slide (unchanged)
+                  return Container(
+                    margin: EdgeInsets.only(right: 16),
+                    child: _buildTestimonialCard(testimonials[pageIndex]),
+                  );
+                }
               },
             ),
           ),
@@ -1273,7 +1462,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
-              testimonials.length,
+              isWeb ? (testimonials.length / 2).ceil() : testimonials.length,
               (index) => Container(
                 margin: EdgeInsets.symmetric(horizontal: 4),
                 width: 8,
@@ -1369,152 +1558,286 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
   }
 
   Widget _buildContinueButton() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWeb = screenWidth >= 768;
+
     return Container(
       margin: EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // First Row - Buy Now and Add To Cart buttons
-          Row(
-            children: [
-              // Buy Now Button
-              Expanded(
-                child: SizedBox(
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Handle buy now action
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Purchasing ${widget.courseTitle}...'),
-                          backgroundColor: Colors.green[600],
-                          behavior: SnackBarBehavior.floating,
+      child: isWeb ? _buildWebButtons() : _buildMobileButtons(),
+    );
+  }
+
+  Widget _buildWebButtons() {
+    return Center(
+      child: Container(
+        width: 400, // Fixed width for web
+        child: Column(
+          children: [
+            // First Row - Buy Now and Add To Cart buttons
+            Row(
+              children: [
+                // Buy Now Button
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Handle buy now action
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Purchasing ${widget.courseTitle}...'),
+                            backgroundColor: Colors.green[600],
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[600],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        elevation: 3,
+                        shadowColor: Colors.blue.withValues(alpha: 0.3),
                       ),
-                      elevation: 3,
-                      shadowColor: Colors.blue.withValues(alpha: 0.3),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.flash_on_rounded, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'BUY NOW',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.flash_on_rounded, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'BUY NOW',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12),
-              // Add To Cart Button
-              Expanded(
-                child: SizedBox(
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Navigate to Add to Cart page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddToCartPage(
-                            courseTitle: widget.courseTitle,
-                            courseAuthor: widget.courseAuthor,
-                            courseImage: widget.courseImage,
-                            coursePrice: '\$99.00', // You can make this dynamic
-                          ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF5F299E),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        ],
                       ),
-                      elevation: 3,
-                      shadowColor: Color(0xFF5F299E).withValues(alpha: 0.3),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.shopping_cart_rounded, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'ENROLL NOW',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
+                  ),
+                ),
+                SizedBox(width: 12),
+                // Add To Cart Button
+                Expanded(
+                  child: SizedBox(
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddToCartPage(
+                              courseTitle: widget.courseTitle,
+                              courseAuthor: widget.courseAuthor,
+                              courseImage: widget.courseImage,
+                              coursePrice: '\$99.99',
+                            ),
                           ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.blue[600],
+                        side: BorderSide(color: Colors.blue[600]!, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.shopping_cart_outlined, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'ADD TO CART',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          // Second Row - Have a Query button
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: OutlinedButton(
-              onPressed: () {
-                // Handle query action
-                _showQueryDialog(context);
-              },
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Color(0xFF5F299E), width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              ],
+            ),
+            SizedBox(height: 12),
+            // Second Row - Ask Query button
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton.icon(
+                onPressed: _showQueryDialog,
+                icon: Icon(Icons.help_outline, size: 18),
+                label: Text(
+                  'Ask Query About Course',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                backgroundColor: Colors.white,
-                foregroundColor: Color(0xFF5F299E),
-                elevation: 2,
-                shadowColor: Color(0xFF5F299E).withValues(alpha: 0.15),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.help_outline_rounded,
-                    size: 22,
-                    color: Color(0xFF5F299E),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.grey[700],
+                  side: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  SizedBox(width: 10),
-                  Text(
-                    'HAVE A QUERY?',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.8,
-                      color: Color(0xFF5F299E),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  void _showQueryDialog(BuildContext context) {
+  Widget _buildMobileButtons() {
+    return Column(
+      children: [
+        // First Row - Buy Now and Add To Cart buttons
+        Row(
+          children: [
+            // Buy Now Button
+            Expanded(
+              child: SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Handle buy now action
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Purchasing ${widget.courseTitle}...'),
+                        backgroundColor: Colors.green[600],
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[600],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
+                    shadowColor: Colors.blue.withValues(alpha: 0.3),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.flash_on_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'BUY NOW',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(width: 12),
+            // Add To Cart Button
+            Expanded(
+              child: SizedBox(
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Navigate to Add to Cart page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddToCartPage(
+                          courseTitle: widget.courseTitle,
+                          courseAuthor: widget.courseAuthor,
+                          courseImage: widget.courseImage,
+                          coursePrice: '\$99.00', // You can make this dynamic
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF5F299E),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
+                    shadowColor: Color(0xFF5F299E).withValues(alpha: 0.3),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.shopping_cart_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'ENROLL NOW',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        // Second Row - Have a Query button
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: OutlinedButton(
+            onPressed: () {
+              // Handle query action
+              _showQueryDialog();
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Color(0xFF5F299E), width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              backgroundColor: Colors.white,
+              foregroundColor: Color(0xFF5F299E),
+              elevation: 2,
+              shadowColor: Color(0xFF5F299E).withValues(alpha: 0.15),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.help_outline_rounded,
+                  size: 22,
+                  color: Color(0xFF5F299E),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'HAVE A QUERY?',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.8,
+                    color: Color(0xFF5F299E),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showQueryDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1605,7 +1928,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage>
             ),
           ],
         );
-      },
+      }, 
     );
   }
 }
