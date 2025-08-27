@@ -8,7 +8,7 @@ class InterestBasedPage extends StatefulWidget {
 }
 
 class _InterestBasedPageState extends State<InterestBasedPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin { 
   String _selectedLanguage = '';
   int _currentIndex = 0;
   late PageController _pageController;
