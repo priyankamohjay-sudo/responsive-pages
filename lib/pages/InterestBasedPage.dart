@@ -111,21 +111,22 @@ class _InterestBasedPageState extends State<InterestBasedPage>
         // Determine if this is a very small mobile screen
         final isSmallScreen = constraints.maxWidth < 360 || constraints.maxHeight < 640;
         final isVerySmallScreen = constraints.maxHeight < 600;
+        final isExtremelySmallScreen = constraints.maxHeight < 550;
         
         // Responsive values based on screen size
-        double titleFontSize = isSmallScreen ? 16 : 20;
-        double subtitleFontSize = isSmallScreen ? 11 : 14;
-        double titleHorizontalPadding = isSmallScreen ? 14 : 20;
-        double titleVerticalPadding = isSmallScreen ? 8 : 12;
-        double cardHeight = isVerySmallScreen ? 75 : (isSmallScreen ? 85 : 110);
-        double cardMargin = isSmallScreen ? 14 : 20;
-        double spacingAfterTitle = isSmallScreen ? 1 : 4;
-        double spacingAfterSubtitle = isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 25);
-        double spacingAfterCards = isSmallScreen ? 8 : 15;
-        double spacingBeforeButton = isVerySmallScreen ? 15 : (isSmallScreen ? 20 : 50);
-        double buttonMargin = isSmallScreen ? 30 : 60;
-        double buttonHeight = isSmallScreen ? 48 : 56;
-        double buttonFontSize = isSmallScreen ? 15 : 18;
+        double titleFontSize = isExtremelySmallScreen ? 14 : (isSmallScreen ? 16 : 20);
+        double subtitleFontSize = isExtremelySmallScreen ? 10 : (isSmallScreen ? 11 : 14);
+        double titleHorizontalPadding = isExtremelySmallScreen ? 12 : (isSmallScreen ? 14 : 20);
+        double titleVerticalPadding = isExtremelySmallScreen ? 6 : (isSmallScreen ? 8 : 12);
+        double cardHeight = isExtremelySmallScreen ? 50 : (isVerySmallScreen ? 60 : (isSmallScreen ? 70 : 110));
+        double cardMargin = isExtremelySmallScreen ? 10 : (isSmallScreen ? 14 : 20);
+        double spacingAfterTitle = isExtremelySmallScreen ? 0 : (isSmallScreen ? 1 : 4);
+        double spacingAfterSubtitle = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 25));
+        double spacingAfterCards = isExtremelySmallScreen ? 4 : (isSmallScreen ? 8 : 15);
+        double spacingBeforeButton = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 15 : (isSmallScreen ? 20 : 50));
+        double buttonMargin = isExtremelySmallScreen ? 20 : (isSmallScreen ? 30 : 60);
+        double buttonHeight = isExtremelySmallScreen ? 44 : (isSmallScreen ? 48 : 56);
+        double buttonFontSize = isExtremelySmallScreen ? 14 : (isSmallScreen ? 15 : 18);
 
         return Column(
           children: [
@@ -208,7 +209,7 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                               final interest = interests[index];
                               return Container(
                                 margin: EdgeInsets.symmetric(horizontal: cardMargin),
-                                child: _buildInterestCard(interest, isSmallScreen, isVerySmallScreen),
+                                child: _buildInterestCard(interest, isSmallScreen, isVerySmallScreen, isExtremelySmallScreen),
                               );
                             },
                           ),
@@ -741,17 +742,17 @@ class _InterestBasedPageState extends State<InterestBasedPage>
   }
 
   // Build interest card widget - Simple SpringBoot style (Mobile) - responsive
-  Widget _buildInterestCard(Map<String, dynamic> interest, bool isSmallScreen, bool isVerySmallScreen) {
+  Widget _buildInterestCard(Map<String, dynamic> interest, bool isSmallScreen, bool isVerySmallScreen, bool isExtremelySmallScreen) {
     final isSelected = _selectedLanguage == interest['title'];
     
     // Responsive values based on screen size
-    double horizontalPadding = isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20);
-    double iconSize = isVerySmallScreen ? 22 : (isSmallScreen ? 26 : 30);
-    double iconSpacing = isVerySmallScreen ? 18 : (isSmallScreen ? 24 : 30);
-    double titleFontSize = isVerySmallScreen ? 13 : (isSmallScreen ? 14 : 16);
-    double descriptionFontSize = isVerySmallScreen ? 9 : (isSmallScreen ? 10 : 12);
-    double indicatorSize = isVerySmallScreen ? 30 : (isSmallScreen ? 36 : 40);
-    double indicatorSpacing = isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20);
+    double horizontalPadding = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20));
+    double iconSize = isExtremelySmallScreen ? 18 : (isVerySmallScreen ? 22 : (isSmallScreen ? 26 : 30));
+    double iconSpacing = isExtremelySmallScreen ? 14 : (isVerySmallScreen ? 18 : (isSmallScreen ? 24 : 30));
+    double titleFontSize = isExtremelySmallScreen ? 11 : (isVerySmallScreen ? 13 : (isSmallScreen ? 14 : 16));
+    double descriptionFontSize = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 9 : (isSmallScreen ? 10 : 12));
+    double indicatorSize = isExtremelySmallScreen ? 26 : (isVerySmallScreen ? 30 : (isSmallScreen ? 36 : 40));
+    double indicatorSpacing = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20));
 
     return GestureDetector(
       onTap: () {
@@ -761,7 +762,7 @@ class _InterestBasedPageState extends State<InterestBasedPage>
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: isVerySmallScreen ? 70 : (isSmallScreen ? 80 : 90),
+        height: isExtremelySmallScreen ? 45 : (isVerySmallScreen ? 55 : (isSmallScreen ? 65 : 85)),
         decoration: BoxDecoration(
           // Selected: Gradient background, Unselected: White background
           gradient: isSelected
@@ -817,7 +818,7 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                   interest['icon'],
                   // Selected: White icon, Unselected: Colored icon
                   color: isSelected ? Colors.white : interest['color'],
-                  size: isVerySmallScreen ? 18 : (isSmallScreen ? 20 : 24),
+                  size: isExtremelySmallScreen ? 16 : (isVerySmallScreen ? 18 : (isSmallScreen ? 20 : 24)),
                 ),
               ),
 
@@ -841,7 +842,7 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: isVerySmallScreen ? 1 : (isSmallScreen ? 2 : 4)),
+                    SizedBox(height: isExtremelySmallScreen ? 0 : (isVerySmallScreen ? 1 : (isSmallScreen ? 2 : 4))),
                     Text(
                       interest['description'],
                       style: TextStyle(
@@ -878,12 +879,12 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                     ? Icon(
                         Icons.check_circle,
                         color: Colors.white,
-                        size: isVerySmallScreen ? 18 : (isSmallScreen ? 20 : 24),
+                        size: isExtremelySmallScreen ? 16 : (isVerySmallScreen ? 18 : (isSmallScreen ? 20 : 24)),
                       )
                     : Container(
-                        width: isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 20),
-                        height: isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 20),
-                        margin: EdgeInsets.all(isVerySmallScreen ? 6 : (isSmallScreen ? 8 : 10)),
+                        width: isExtremelySmallScreen ? 12 : (isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 20)),
+                        height: isExtremelySmallScreen ? 12 : (isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 20)),
+                        margin: EdgeInsets.all(isExtremelySmallScreen ? 4 : (isVerySmallScreen ? 6 : (isSmallScreen ? 8 : 10))),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(

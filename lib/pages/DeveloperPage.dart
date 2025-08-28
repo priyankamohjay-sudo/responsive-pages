@@ -8,6 +8,47 @@ class DeveloperPages extends StatefulWidget {
   _DeveloperPagesState createState() => _DeveloperPagesState();
 }
 
+// Custom painter for the top curved shape - matching second image design
+class TopCurvePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    
+    // Start from top left
+    path.moveTo(0, 0);
+    
+    // Draw top edge
+    path.lineTo(size.width, 0);
+    
+    // Draw right edge down
+    path.lineTo(size.width, size.height * 0.6);
+    
+    // Create the curved bottom - matching second image curve
+    path.quadraticBezierTo(
+      size.width * 0.75, size.height * 0.85,  // Control point
+      size.width * 0.5, size.height * 0.9,    // Mid point
+    );
+    
+    path.quadraticBezierTo(
+      size.width * 0.25, size.height * 0.95,  // Control point
+      0, size.height * 0.75,                  // End point
+    );
+    
+    // Close the path
+    path.close();
+    
+    // Create a white fill for the curved area below the purple
+    final whitePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    
+    canvas.drawPath(path, whitePaint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
 class _DeveloperPagesState extends State<DeveloperPages>
     with TickerProviderStateMixin {
   String _selectedLanguage = '';
@@ -118,14 +159,14 @@ class _DeveloperPagesState extends State<DeveloperPages>
     return LayoutBuilder(
       builder: (context, constraints) {
         // Responsive values based on available width - adjusted for better spacing
-        double horizontalMargin = constraints.maxWidth < 300 ? 10 : 15; // Reduced margins
-        double verticalPadding = constraints.maxWidth < 300 ? 6 : 8; // Reduced padding
-        double horizontalPadding = constraints.maxWidth < 300 ? 10 : 14; // Reduced padding
-        double iconSize = constraints.maxWidth < 300 ? 22 : 26; // Reduced icon size
-        double iconPadding = constraints.maxWidth < 300 ? 10 : 14; // Reduced padding
-        double fontSize = constraints.maxWidth < 300 ? 12 : 14; // Reduced font size
-        double indicatorSize = constraints.maxWidth < 300 ? 18 : 20; // Reduced indicator size
-        double checkIconSize = constraints.maxWidth < 300 ? 10 : 12; // Reduced check icon size
+        double horizontalMargin = constraints.maxWidth < 300 ? 12 : 18; 
+      double verticalPadding = constraints.maxWidth < 300 ? 16 : 20; 
+      double horizontalPadding = constraints.maxWidth < 300 ? 22 : 28; 
+      double iconSize = constraints.maxWidth < 300 ? 28 : 34; 
+      double iconPadding = constraints.maxWidth < 300 ? 14 : 18; 
+      double fontSize = constraints.maxWidth < 300 ? 18 : 20; 
+      double indicatorSize = constraints.maxWidth < 300 ? 30 : 36; 
+      double checkIconSize = constraints.maxWidth < 300 ? 14 : 16; 
 
         return Container(
           margin: EdgeInsets.symmetric(horizontal: horizontalMargin, vertical: 6), // Reduced vertical margin
@@ -340,148 +381,169 @@ class _DeveloperPagesState extends State<DeveloperPages>
     double titleFontSize = screenWidth < 360 ? 18 : 20;
     double subtitleFontSize = screenWidth < 360 ? 12 : 14;
     double imageHeight = screenHeight < 700 ? 100 : 120; 
-    double cardHeight = screenHeight < 700 ? 80 : 100; 
+    double cardHeight = screenHeight < 700 ? 80 : 130; 
+    double topCurveHeight = screenHeight * 0.25; // Increased curve height to match second image
 
-    return SafeArea(
-      child: Column(
-        children: [
-          
-          FadeTransition(
+    return Stack(
+      children: [
+        // Purple curved background shape - matching second image
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: FadeTransition(
             opacity: _fadeAnimation,
             child: Container(
-              height: screenHeight * 0.12, 
-              child: Image.asset(
-                'assets/images/shape7.png',
-                width: double.infinity,
-                fit: BoxFit.cover,
+              height: topCurveHeight,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF5F299E),
+                    Color(0xFF7B3FB8),
+                  ],
+                ),
+              ),
+              child: CustomPaint(
+                painter: TopCurvePainter(),
+                size: Size(screenWidth, topCurveHeight),
               ),
             ),
           ),
+        ),
 
-        
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-              child: SlideTransition(
-                position: _slideAnimation,
+        // Content with SafeArea
+        SafeArea(
+          child: Column(
+            children: [
+              // Add spacing to push content down below the curve
+              SizedBox(height: topCurveHeight * 0.4),
+              
+              Flexible(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(height: screenHeight * 0.015), 
 
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(height: screenHeight * 0.015), 
-
-                      
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth < 360 ? 15 : 20,
-                          vertical: screenWidth < 360 ? 8 : 10, 
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF5F299E).withValues(alpha: 0.1),
-                              const Color(0xFF5F299E).withValues(alpha: 0.05),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                            color: const Color(0xFFF7B440).withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          "Select Your Programming Language",
-                          style: TextStyle(
-                            fontSize: titleFontSize,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF2D3748),
-                            letterSpacing: 0.5,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                      SizedBox(height: screenHeight * 0.008), // Reduced spacing
-
-                      Text(
-                        "Choose your preferred technology stack",
-                        style: TextStyle(
-                          fontSize: subtitleFontSize,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w400,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      SizedBox(height: screenHeight * 0.015), // Reduced spacing
-
-                      // Enhanced developer image - responsive
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFF7B440).withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                              spreadRadius: -5,
+                          // Title container with enhanced styling
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth < 360 ? 15 : 20,
+                              vertical: screenWidth < 360 ? 8 : 10, 
                             ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            'assets/images/developer.png',
-                            height: imageHeight,
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: screenHeight * 0.015), // Reduced spacing
-
-                      // Language cards - fixed height instead of Expanded
-                      Container(
-                        height: cardHeight,
-                        child: SlideTransition(
-                          position: _slideAnimation,
-                          child: FadeTransition(
-                            opacity: _fadeAnimation,
-                            child: PageView.builder(
-                              controller: _pageController,
-                              onPageChanged: _handleSlideChange,
-                              itemCount: languages.length, // Show 1 card per slide on mobile
-                              itemBuilder: (context, slideIndex) {
-                                return Center(
-                                  child: _buildLanguageCard(languages[slideIndex]),
-                                );
-                              },
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF5F299E).withValues(alpha: 0.1),
+                                  const Color(0xFF5F299E).withValues(alpha: 0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(25),
+                              border: Border.all(
+                                color: const Color(0xFFF7B440).withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              "Select Your Programming Language",
+                              style: TextStyle(
+                                fontSize: titleFontSize,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF2D3748),
+                                letterSpacing: 0.5,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                        ),
+
+                          SizedBox(height: screenHeight * 0.008),
+
+                          Text(
+                            "Choose your preferred technology stack",
+                            style: TextStyle(
+                              fontSize: subtitleFontSize,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          SizedBox(height: screenHeight * 0.015),
+
+                          // Enhanced developer image - responsive
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFF7B440).withValues(alpha: 0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                  spreadRadius: -5,
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                'assets/images/developer.png',
+                                height: imageHeight,
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: screenHeight * 0.015),
+
+                          // Language cards - fixed height instead of Expanded
+                          Container(
+                            height: cardHeight,
+                            child: SlideTransition(
+                              position: _slideAnimation,
+                              child: FadeTransition(
+                                opacity: _fadeAnimation,
+                                child: PageView.builder(
+                                  controller: _pageController,
+                                  onPageChanged: _handleSlideChange,
+                                  itemCount: languages.length,
+                                  itemBuilder: (context, slideIndex) {
+                                    return Center(
+                                      child: _buildLanguageCard(languages[slideIndex]),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: screenHeight * 0.015),
+
+                          // Dot indicators
+                          _buildDotIndicators(),
+
+                          SizedBox(height: screenHeight * 0.02),
+
+                          // Enhanced navigation buttons
+                          _buildNavigationButtons(),
+
+                          SizedBox(height: screenHeight * 0.015),
+                        ],
                       ),
-
-                      SizedBox(height: screenHeight * 0.015), // Reduced spacing
-
-                      // Dot indicators
-                      _buildDotIndicators(),
-
-                      SizedBox(height: screenHeight * 0.02), // Reduced spacing
-
-                      // Enhanced navigation buttons
-                      _buildNavigationButtons(),
-
-                      SizedBox(height: screenHeight * 0.015), // Reduced spacing
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
