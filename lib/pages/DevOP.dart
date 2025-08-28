@@ -120,15 +120,15 @@ class _DevOpPagesState extends State<DevOpPages> with TickerProviderStateMixin {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Responsive values based on available width - adjusted for better spacing
-        double horizontalMargin = constraints.maxWidth < 300 ? 10 : 15; // Reduced margins
-        double verticalPadding = constraints.maxWidth < 300 ? 6 : 8; // Reduced padding
-        double horizontalPadding = constraints.maxWidth < 300 ? 10 : 14; // Reduced padding
-        double iconSize = constraints.maxWidth < 300 ? 22 : 26; // Reduced icon size
-        double iconPadding = constraints.maxWidth < 300 ? 10 : 14; // Reduced padding
-        double fontSize = constraints.maxWidth < 300 ? 12 : 14; // Reduced font size
-        double indicatorSize = constraints.maxWidth < 300 ? 18 : 20; // Reduced indicator size
-        double checkIconSize = constraints.maxWidth < 300 ? 10 : 12; // Reduced check icon size
+        // Responsive values based on available width - matching DeveloperPage sizing
+        double horizontalMargin = constraints.maxWidth < 300 ? 12 : 18; 
+        double verticalPadding = constraints.maxWidth < 300 ? 16 : 20; 
+        double horizontalPadding = constraints.maxWidth < 300 ? 22 : 28; 
+        double iconSize = constraints.maxWidth < 300 ? 28 : 34; 
+        double iconPadding = constraints.maxWidth < 300 ? 14 : 18; 
+        double fontSize = constraints.maxWidth < 300 ? 18 : 20; 
+        double indicatorSize = constraints.maxWidth < 300 ? 30 : 36; 
+        double checkIconSize = constraints.maxWidth < 300 ? 14 : 16;
 
         return Container(
           margin: EdgeInsets.symmetric(horizontal: horizontalMargin, vertical: 6), // Reduced vertical margin
