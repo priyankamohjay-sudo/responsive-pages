@@ -352,13 +352,65 @@ class _TesterPagesState extends State<TesterPages>
           // Enhanced top image with animation - reduced height
           FadeTransition(
             opacity: _fadeAnimation,
-            child: Container(
-              height: screenHeight * 0.12, // Reduced from 15% to 12%
-              child: Image.asset(
-                'assets/images/shape7.png',
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            child: Stack(
+              children: [
+                Container(
+                  height: screenHeight * 0.12, // Reduced from 15% to 12%
+                  child: Image.asset(
+                    'assets/images/shape7.png',
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // Back button overlay
+                Positioned(
+                  top: 8,
+                  left: horizontalPadding,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Title overlay
+                Positioned(
+                  top: 8,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Text(
+                      "Tester Courses",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 

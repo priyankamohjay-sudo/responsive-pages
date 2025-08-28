@@ -104,223 +104,196 @@ class _InterestBasedPageState extends State<InterestBasedPage>
     );
   }
 
-  // Mobile layout - responsive for all mobile screen sizes
+  // Mobile layout - exactly the same as original
   Widget _buildMobileLayout() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Determine if this is a very small mobile screen
-        final isSmallScreen = constraints.maxWidth < 360 || constraints.maxHeight < 640;
-        final isVerySmallScreen = constraints.maxHeight < 600;
-        final isExtremelySmallScreen = constraints.maxHeight < 550;
-        
-        // Responsive values based on screen size
-        double titleFontSize = isExtremelySmallScreen ? 14 : (isSmallScreen ? 16 : 20);
-        double subtitleFontSize = isExtremelySmallScreen ? 10 : (isSmallScreen ? 11 : 14);
-        double titleHorizontalPadding = isExtremelySmallScreen ? 12 : (isSmallScreen ? 14 : 20);
-        double titleVerticalPadding = isExtremelySmallScreen ? 6 : (isSmallScreen ? 8 : 12);
-        double cardHeight = isExtremelySmallScreen ? 50 : (isVerySmallScreen ? 60 : (isSmallScreen ? 70 : 110));
-        double cardMargin = isExtremelySmallScreen ? 10 : (isSmallScreen ? 14 : 20);
-        double spacingAfterTitle = isExtremelySmallScreen ? 0 : (isSmallScreen ? 1 : 4);
-        double spacingAfterSubtitle = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 25));
-        double spacingAfterCards = isExtremelySmallScreen ? 4 : (isSmallScreen ? 8 : 15);
-        double spacingBeforeButton = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 15 : (isSmallScreen ? 20 : 50));
-        double buttonMargin = isExtremelySmallScreen ? 20 : (isSmallScreen ? 30 : 60);
-        double buttonHeight = isExtremelySmallScreen ? 44 : (isSmallScreen ? 48 : 56);
-        double buttonFontSize = isExtremelySmallScreen ? 14 : (isSmallScreen ? 15 : 18);
+    return Column(
+      children: [
+        // Top decorative image with animation
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: Image.asset(
+            'assets/images/shape8.png',
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+        ),
 
-        return Column(
-          children: [
-            // Top decorative image with animation - smaller on small screens
-            FadeTransition(
+        Expanded(
+          child: SafeArea(
+            child: FadeTransition(
               opacity: _fadeAnimation,
-              child: Container(
-                height: isSmallScreen ? null : null, // Let it scale naturally
-                child: Image.asset(
-                  'assets/images/shape8.png',
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Column(
+                  children: [
+                    // Title
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF5F299E).withValues(alpha: 0.1),
+                            const Color(0xFF5F299E).withValues(alpha: 0.05),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
+                          color: const Color(0xFFF7B440).withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Text(
+                        'Select Your Interest',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D3748),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
 
-            Expanded(
-              child: SafeArea(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: Column(
-                      children: [
-                        // Title - responsive sizing
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: titleHorizontalPadding,
-                            vertical: titleVerticalPadding,
-                          ),
+                    const SizedBox(height: 4),
+
+                    Text(
+                      'Swipe to explore different career paths',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+
+                    const SizedBox(height: 25),
+
+                    // Card Slider with SpringBoot style
+                    SizedBox(
+                      height: 110,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+                        itemCount: interests.length,
+                        itemBuilder: (context, index) {
+                          final interest = interests[index];
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _buildInterestCard(interest),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    // Dots Indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        interests.length,
+                        (index) => AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: _currentIndex == index ? 18 : 8,
+                          height: 8,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF5F299E).withValues(alpha: 0.1),
-                                const Color(0xFF5F299E).withValues(alpha: 0.05),
+                            color: _currentIndex == index
+                                ? const Color(0xFF5F299E)
+                                : Colors.grey[300],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 50),
+
+                    // Next Button
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 60),
+                      height: 56,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: _selectedLanguage.isNotEmpty
+                            ? const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Color(0xFF5F299E),
+                                  Color(0xFF5F299E),
+                                ],
+                              )
+                            : null,
+                        color: _selectedLanguage.isEmpty
+                            ? Colors.grey[300]
+                            : null,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: _selectedLanguage.isNotEmpty
+                            ? [
+                                BoxShadow(
+                                  color: const Color(0xFFF7B440).withValues(alpha: 0.4),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: _selectedLanguage.isNotEmpty ? _handleNext : null,
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Continue",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: _selectedLanguage.isNotEmpty
+                                        ? Colors.white
+                                        : Colors.grey[500],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: _selectedLanguage.isNotEmpty
+                                      ? Colors.white
+                                      : Colors.grey[500],
+                                  size: 20,
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(25),
-                            border: Border.all(
-                              color: const Color(0xFFF7B440).withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            'Select Your Interest',
-                            style: TextStyle(
-                              fontSize: titleFontSize,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF2D3748),
-                              letterSpacing: 0.5,
-                            ),
                           ),
                         ),
-
-                        SizedBox(height: spacingAfterTitle),
-
-                        Text(
-                          'Swipe to explore different career paths',
-                          style: TextStyle(
-                            fontSize: subtitleFontSize,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-
-                        SizedBox(height: spacingAfterSubtitle),
-
-                        // Card Slider with responsive height
-                        SizedBox(
-                          height: cardHeight,
-                          child: PageView.builder(
-                            controller: _pageController,
-                            onPageChanged: (index) {
-                              setState(() {
-                                _currentIndex = index;
-                              });
-                            },
-                            itemCount: interests.length,
-                            itemBuilder: (context, index) {
-                              final interest = interests[index];
-                              return Container(
-                                margin: EdgeInsets.symmetric(horizontal: cardMargin),
-                                child: _buildInterestCard(interest, isSmallScreen, isVerySmallScreen, isExtremelySmallScreen),
-                              );
-                            },
-                          ),
-                        ),
-
-                        SizedBox(height: spacingAfterCards),
-
-                        // Dots Indicator
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            interests.length,
-                            (index) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: _currentIndex == index ? 18 : 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: _currentIndex == index
-                                    ? const Color(0xFF5F299E)
-                                    : Colors.grey[300],
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(height: spacingBeforeButton),
-
-                        // Next Button - responsive sizing
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: buttonMargin),
-                          height: buttonHeight,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            gradient: _selectedLanguage.isNotEmpty
-                                ? const LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Color(0xFF5F299E),
-                                      Color(0xFF5F299E),
-                                    ],
-                                  )
-                                : null,
-                            color: _selectedLanguage.isEmpty
-                                ? Colors.grey[300]
-                                : null,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: _selectedLanguage.isNotEmpty
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(0xFFF7B440).withValues(alpha: 0.4),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: _selectedLanguage.isNotEmpty ? _handleNext : null,
-                              child: Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      "Continue",
-                                      style: TextStyle(
-                                        fontSize: buttonFontSize,
-                                        fontWeight: FontWeight.w600,
-                                        color: _selectedLanguage.isNotEmpty
-                                            ? Colors.white
-                                            : Colors.grey[500],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Icon(
-                                      Icons.arrow_forward_rounded,
-                                      color: _selectedLanguage.isNotEmpty
-                                          ? Colors.white
-                                          : Colors.grey[500],
-                                      size: isSmallScreen ? 18 : 20,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
+          ),
+        ),
 
-            // Footer image with animation
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Image.asset(
-                'assets/images/shape9.png',
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ],
-        );
-      },
+        // Footer image with animation
+        FadeTransition(
+          opacity: _fadeAnimation,
+          child: Image.asset(
+            'assets/images/shape9.png',
+            width: double.infinity,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ],
     );
   }
 
@@ -741,18 +714,9 @@ class _InterestBasedPageState extends State<InterestBasedPage>
     );
   }
 
-  // Build interest card widget - Simple SpringBoot style (Mobile) - responsive
-  Widget _buildInterestCard(Map<String, dynamic> interest, bool isSmallScreen, bool isVerySmallScreen, bool isExtremelySmallScreen) {
+  // Build interest card widget - Simple SpringBoot style (Mobile)
+  Widget _buildInterestCard(Map<String, dynamic> interest) {
     final isSelected = _selectedLanguage == interest['title'];
-    
-    // Responsive values based on screen size
-    double horizontalPadding = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20));
-    double iconSize = isExtremelySmallScreen ? 18 : (isVerySmallScreen ? 22 : (isSmallScreen ? 26 : 30));
-    double iconSpacing = isExtremelySmallScreen ? 14 : (isVerySmallScreen ? 18 : (isSmallScreen ? 24 : 30));
-    double titleFontSize = isExtremelySmallScreen ? 11 : (isVerySmallScreen ? 13 : (isSmallScreen ? 14 : 16));
-    double descriptionFontSize = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 9 : (isSmallScreen ? 10 : 12));
-    double indicatorSize = isExtremelySmallScreen ? 26 : (isVerySmallScreen ? 30 : (isSmallScreen ? 36 : 40));
-    double indicatorSpacing = isExtremelySmallScreen ? 8 : (isVerySmallScreen ? 12 : (isSmallScreen ? 16 : 20));
 
     return GestureDetector(
       onTap: () {
@@ -762,7 +726,7 @@ class _InterestBasedPageState extends State<InterestBasedPage>
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: isExtremelySmallScreen ? 45 : (isVerySmallScreen ? 55 : (isSmallScreen ? 65 : 85)),
+        height: 90,
         decoration: BoxDecoration(
           // Selected: Gradient background, Unselected: White background
           gradient: isSelected
@@ -800,13 +764,13 @@ class _InterestBasedPageState extends State<InterestBasedPage>
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
               // Left icon
               Container(
-                width: iconSize,
-                height: iconSize,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   // Selected: Semi-transparent white, Unselected: Very light colored background
                   color: isSelected
@@ -818,11 +782,11 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                   interest['icon'],
                   // Selected: White icon, Unselected: Colored icon
                   color: isSelected ? Colors.white : interest['color'],
-                  size: isExtremelySmallScreen ? 16 : (isVerySmallScreen ? 18 : (isSmallScreen ? 20 : 24)),
+                  size: 24,
                 ),
               ),
 
-              SizedBox(width: iconSpacing),
+              const SizedBox(width: 30),
 
               // Title and description in center
               Expanded(
@@ -832,7 +796,7 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                     Text(
                       interest['title'],
                       style: TextStyle(
-                        fontSize: titleFontSize,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         // Selected: White text, Unselected: Dark text
                         color: isSelected
@@ -842,11 +806,11 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: isExtremelySmallScreen ? 0 : (isVerySmallScreen ? 1 : (isSmallScreen ? 2 : 4))),
+                    const SizedBox(height: 4),
                     Text(
                       interest['description'],
                       style: TextStyle(
-                        fontSize: descriptionFontSize,
+                        fontSize: 12,
                         fontWeight: FontWeight.w400,
                         // Selected: Light white text, Unselected: Grey text
                         color: isSelected
@@ -862,12 +826,12 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                 ),
               ),
 
-              SizedBox(width: indicatorSpacing),
+              const SizedBox(width: 20),
 
               // Right selection indicator
               Container(
-                width: indicatorSize,
-                height: indicatorSize,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   // Selected: Semi-transparent white, Unselected: Very light grey
                   color: isSelected
@@ -876,15 +840,15 @@ class _InterestBasedPageState extends State<InterestBasedPage>
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: isSelected
-                    ? Icon(
+                    ? const Icon(
                         Icons.check_circle,
                         color: Colors.white,
-                        size: isExtremelySmallScreen ? 16 : (isVerySmallScreen ? 18 : (isSmallScreen ? 20 : 24)),
+                        size: 24,
                       )
                     : Container(
-                        width: isExtremelySmallScreen ? 12 : (isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 20)),
-                        height: isExtremelySmallScreen ? 12 : (isVerySmallScreen ? 14 : (isSmallScreen ? 16 : 20)),
-                        margin: EdgeInsets.all(isExtremelySmallScreen ? 4 : (isVerySmallScreen ? 6 : (isSmallScreen ? 8 : 10))),
+                        width: 20,
+                        height: 20,
+                        margin: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(

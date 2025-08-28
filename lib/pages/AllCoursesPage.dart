@@ -217,20 +217,17 @@ class _AllCoursesPageState extends State<AllCoursesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final screenWidth = constraints.maxWidth;
-          
-          // Use new design for web/desktop/mac (width > 800px)
-          if (screenWidth > 800) {
-            return _buildWebContent();
-          } else {
-            return _buildMobileContent();
-          }
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = constraints.maxWidth;
+        
+        // Use new design for web/desktop/mac (width > 800px)
+        if (screenWidth > 800) {
+          return _buildWebContent();
+        } else {
+          return _buildMobileLayout();
+        }
+      },
     );
   }
 

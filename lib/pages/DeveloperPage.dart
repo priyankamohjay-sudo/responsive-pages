@@ -417,8 +417,58 @@ class _DeveloperPagesState extends State<DeveloperPages>
         SafeArea(
           child: Column(
             children: [
+              // Back button for mobile
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.pop(context);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(
+                              Icons.arrow_back_ios_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          "Developer Courses",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: titleFontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Invisible container to balance the layout
+                    Container(width: 44, height: 44),
+                  ],
+                ),
+              ),
+              
               // Add spacing to push content down below the curve
-              SizedBox(height: topCurveHeight * 0.4),
+              SizedBox(height: topCurveHeight * 0.2),
               
               Flexible(
                 child: Padding(

@@ -715,112 +715,178 @@ class _AllCoursesPageTabState extends State<AllCoursesPageTab> {
     );
   }
 
-  // Mobile Layout - Keep existing design unchanged
+  // Mobile Layout - Match home screen design
   Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Section
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF5F299E), Color(0xFF8B5CF6)],
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top bar with back button like home screen
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Explore All Courses',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Start your learning journey with our comprehensive course collection',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
-
-          // Search and Filter Section
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    decoration: InputDecoration(
-                      hintText: 'Search courses...',
-                      prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+              child: Row(
+                children: [
+                  // Back button
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(
+                            Icons.arrow_back_ios_rounded,
+                            color: Colors.grey[700],
+                            size: 20,
+                          ),
+                        ),
                       ),
                     ),
                   ),
+                  SizedBox(width: 16),
+                  // Title
+                  Expanded(
+                    child: Text(
+                      'All Courses',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Section
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF5F299E), Color(0xFF8B5CF6)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Explore All Courses',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Start your learning journey with our comprehensive course collection',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Search and Filter Section
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: TextField(
+                              controller: _searchController,
+                              onChanged: _onSearchChanged,
+                              decoration: InputDecoration(
+                                hintText: 'Search courses...',
+                                prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xFF5F299E),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            onPressed: _showFilterDialog,
+                            icon: Icon(Icons.filter_list, color: Colors.white),
+                            tooltip: 'Filter courses',
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+
+                    // Results count
+                    Text(
+                      '${_filteredCourses.length} courses found',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    SizedBox(height: 16),
+
+                    // Dynamic course list
+                    ..._filteredCourses.map(
+                      (course) => Column(
+                        children: [
+                          _buildCourseCard(context, course: course),
+                          SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+                  ],
                 ),
               ),
-              SizedBox(width: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFF5F299E),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: IconButton(
-                  onPressed: _showFilterDialog,
-                  icon: Icon(Icons.filter_list, color: Colors.white),
-                  tooltip: 'Filter courses',
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-
-          // Results count
-          Text(
-            '${_filteredCourses.length} courses found',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
             ),
-          ),
-          SizedBox(height: 16),
-
-          // Dynamic course list
-          ..._filteredCourses.map(
-            (course) => Column(
-              children: [
-                _buildCourseCard(context, course: course),
-                SizedBox(height: 16),
-              ],
-            ),
-          ),
-
-          SizedBox(height: 20),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1065,6 +1065,7 @@ class _HomePageTabState extends State<HomePageTab>
   // Learning Progress Section with Slider
   Widget _buildProgressSection() {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600; // Changed from 768 to 600 for better mobile detection
 
     final progressData = [
       {
@@ -1101,7 +1102,10 @@ class _HomePageTabState extends State<HomePageTab>
       },
     ];
 
-    // Both mobile and web: Show progress cards in slider with 2-2 per slide
+    // Responsive: Mobile shows 1 card per slide, Web shows 2 cards per slide
+    final cardsPerSlide = isMobile ? 1 : 2;
+    final totalSlides = (progressData.length / cardsPerSlide).ceil();
+
     return Column(
       children: [
         SizedBox(
@@ -1113,49 +1117,66 @@ class _HomePageTabState extends State<HomePageTab>
                 _currentProgressIndex = index;
               });
             },
-            itemCount: (progressData.length / 2).ceil(),
+            itemCount: totalSlides,
             itemBuilder: (context, pageIndex) {
-              final startIndex = pageIndex * 2;
-              final endIndex = (startIndex + 2).clamp(0, progressData.length);
-              final pageProgress = progressData.sublist(startIndex, endIndex);
+              if (isMobile) {
+                // Mobile: 1 card per slide
+                final progress = progressData[pageIndex];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: _buildProgressCard(
+                    title: progress['title'] as String,
+                    progress: progress['progress'] as double,
+                    percentage: progress['percentage'] as String,
+                    completed: progress['completed'] as String,
+                    gradient: progress['gradient'] as List<Color>,
+                    icon: progress['icon'] as IconData,
+                  ),
+                );
+              } else {
+                // Web: 2 cards per slide
+                final startIndex = pageIndex * 2;
+                final endIndex = (startIndex + 2).clamp(0, progressData.length);
+                final pageProgress = progressData.sublist(startIndex, endIndex);
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  children: pageProgress.asMap().entries.map((entry) {
-                    final progressIndex = entry.key;
-                    final progress = entry.value;
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          right: progressIndex < pageProgress.length - 1 ? 8 : 0,
-                          left: progressIndex > 0 ? 8 : 0,
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: pageProgress.asMap().entries.map((entry) {
+                      final progressIndex = entry.key;
+                      final progress = entry.value;
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: progressIndex < pageProgress.length - 1 ? 8 : 0,
+                            left: progressIndex > 0 ? 8 : 0,
+                          ),
+                          child: _buildProgressCard(
+                            title: progress['title'] as String,
+                            progress: progress['progress'] as double,
+                            percentage: progress['percentage'] as String,
+                            completed: progress['completed'] as String,
+                            gradient: progress['gradient'] as List<Color>,
+                            icon: progress['icon'] as IconData,
+                          ),
                         ),
-                        child: _buildProgressCard(
-                          title: progress['title'] as String,
-                          progress: progress['progress'] as double,
-                          percentage: progress['percentage'] as String,
-                          completed: progress['completed'] as String,
-                          gradient: progress['gradient'] as List<Color>,
-                          icon: progress['icon'] as IconData,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              );
+                      );
+                    }).toList(),
+                  ),
+                );
+              }
             },
           ),
         ),
           // Progress indicators
-          if ((progressData.length / 2).ceil() > 1) ...[
+          if (totalSlides > 1) ...[
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                (progressData.length / 2).ceil(),
+                totalSlides,
                 (index) => GestureDetector(
-                  onTap: screenWidth >= 768 ? () {
+                  onTap: screenWidth >= 600 ? () {
                     // Only enable tap functionality for web/desktop screens
                     _progressPageController.animateToPage(
                       index,
